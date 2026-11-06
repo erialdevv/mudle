@@ -1,0 +1,4 @@
+1.- Para generar migraciones
+uv run alembic revision --autogenerate -m "crear tablas iniciales"
+2.- para subir dichas migraciones
+uv run alembic heads
