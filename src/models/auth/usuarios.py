@@ -1,4 +1,4 @@
-from models.entidad_base import Base_entidades
+from models.entidad_base import BaseEntidades
 import uuid
 from datetime import datetime
 from email_validator import validate_email, EmailNotValidError
@@ -54,16 +54,16 @@ def verifacion_longitudes(valor:str|None):
     }
 
 
-class Usuarios(Base_entidades):
+class Usuarios(BaseEntidades):
     
     def __init__(
         self,
-        id: uuid.UUID,
         creado_por: str,
         pcid: str,
-        codigo:str,
         contrasena:str,
         email:str, # email institucional
+        id:int=None,
+        codigo:uuid.UUID=None,
         nombre:str=None,
         apellido:str=None,
         anulado: bool = False, # False como valor inicial

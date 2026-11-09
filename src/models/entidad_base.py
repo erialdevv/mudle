@@ -82,10 +82,6 @@ class BaseEntidades:
         self.fecha_creacion = fecha_creacion
         self.fecha_editado = fecha_editado
         
-        # Validaciones de dominio
-        verificacion_codigo = validar_uuid(self.codigo)
-        if not verificacion_codigo["estado"]:
-            raise ValueError(f"[CODIGO]: {verificacion_codigo['msg']}")
         
         verificacion_creadopor = validar_uuid(self.creado_por)
         if not verificacion_creadopor["estado"]:

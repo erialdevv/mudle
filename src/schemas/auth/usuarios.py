@@ -4,7 +4,7 @@ import uuid
 class CrUsuariosRequest(BaseModel):
     nombre:str
     apellido:str
-    email_est:str
+    email_est:EmailStr
     contrasena:str
     
 class LeUsuariosResponse(BaseModel):

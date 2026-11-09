@@ -1,0 +1,7 @@
+Copyright (c) 2026 Erick Alvear Santillán
+
+Todos los derechos reservados.
+
+Se otorga permiso únicamente para visualizar el código fuente con fines educativos o de revisión. Queda estrictamente prohibida la copia, modificación, distribución, sublicencia, uso comercial o el alojamiento de este software como un servicio (SaaS) sin el consentimiento previo y por escrito del autor.
+
+EL SOFTWARE SE PROPORCIONA "TAL CUAL", SIN GARANTÍA DE NINGÚN TIPO.
