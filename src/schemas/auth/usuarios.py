@@ -15,6 +15,7 @@ class LeUsuariosResponse(BaseModel):
     anulado:bool
 
 class AcUsuarioRequest(BaseModel):
+    codigo:uuid.UUID
     nombre: str | None = None
     apellido: str | None = None
     email_est: EmailStr | None = None

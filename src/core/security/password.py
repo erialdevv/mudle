@@ -10,7 +10,6 @@ def hash_contrasena(contrasena: str) -> str:
 def verificar_contrasena(contrasena: str, hash_bd: str) -> dict:
     try:
         ph.verify(hash_bd, contrasena)
-        
         return {
             "estado": True,
             "msg": "Contraseña verificada exitosamente."
