@@ -2,7 +2,7 @@ from core.security.password import hash_contrasena
 from repositories.auth.usuarios import insertar_usuario
 from models.auth.usuarios import Usuarios
 
-async def guardar_usuario(conn,**datos):
+async def guardar_usuario(conn,dominios_permitidos,**datos):
     try:
         contrasena = datos["contrasena"]
 
@@ -16,6 +16,7 @@ async def guardar_usuario(conn,**datos):
             pcid=datos.get("p_pcid"),
             contrasena=contrasena_hash,
             email=datos.get("email_est"),
+            dominios_permitidos=dominios_permitidos,
             nombre=datos.get("nombre"),
             apellido=datos.get("apellido")
         )

@@ -62,6 +62,7 @@ class Usuarios(BaseEntidades):
         pcid: str,
         contrasena:str,
         email:str, # email institucional
+        dominios_permitidos:list[str],
         id:int=None,
         codigo:uuid.UUID=None,
         nombre:str=None,
@@ -70,6 +71,7 @@ class Usuarios(BaseEntidades):
         fecha_creacion: datetime = None,
         fecha_editado: datetime = None,
         editado_por: str = None,
+
     ):
         super().__init__(
             id=id,
@@ -86,7 +88,10 @@ class Usuarios(BaseEntidades):
         self.nombre=nombre
         self.apellido=apellido
         
-        verificacion_email:bool|str= verificar_email(self.email)
+        verificacion_email:bool|str= verificar_email(
+            self.email, check_dominio=True, 
+            dominios_permitidos=dominios_permitidos
+        )
         if not verificacion_email["estado"]:
             raise ValueError(f"[EMAIL]: {verificacion_email['msg']}")
         
