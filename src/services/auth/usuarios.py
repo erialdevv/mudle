@@ -4,10 +4,14 @@ from models.auth.usuarios import Usuarios
 
 async def guardar_usuario(conn,dominios_permitidos,**datos):
     try:
-        contrasena = datos["contrasena"]
-
+        contrasena = datos.get("contrasena")
+    
         if not contrasena:
-            return{"estado":False, "msg":"La contrasena es requerida"}
+            return{"estado":False, "msg":"La contrasena es un campo requerido."}
+        
+        email=datos.get("email_est")
+        if not email:
+            return{"estado":False, "msg":"El email es un campo es requerido."}
         
         contrasena_hash=hash_contrasena(contrasena)
         
@@ -40,3 +44,37 @@ async def guardar_usuario(conn,dominios_permitidos,**datos):
     except Exception as error:
         #aqui se receptan los errores por si la conexion fallo o errores de la manipulacion de colecciones
         return {"estado":False, "msg":f"Error en la conexión: {str(error)}"}
+    
+async def actualizar_usuario(conn, dominios_permitidos,**datos):
+    try:
+        if datos.get("codigo") is None or datos.get("codigo") == "":
+            return {"estado": False, "msg": "No se puede continuar sin el codigo del usuario."}
+        
+        n_parametros=len(datos)-1
+        
+        hipotesis1=list(datos.values()).count(None)
+        
+        if hipotesis1==n_parametros:
+            return{"estado":False, "msg":"Todos los campos exceptuando el codigo estan vacios"}
+        
+        if datos.get("contrasena"):
+            contrasena_hash=hash_contrasena(datos["contrasena"])
+        
+
+        Usuarios(
+            editado_por=datos.get("p_editado_por"),
+            pcid=datos.get("p_pcid"),
+            contrasena=contrasena_hash,
+            email=datos.get("email_est"),
+            dominios_permitidos=dominios_permitidos,
+            nombre=datos.get("nombre"),
+            apellido=datos.get("apellido")
+        )
+        
+        #falta logica para armar sp y luego llamar al repo con el sp y sus parametros
+        
+    except ValueError as error:
+        pass
+    except Exception as error:
+        pass
+    

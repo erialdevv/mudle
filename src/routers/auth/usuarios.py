@@ -19,6 +19,7 @@ async def registrar_usuario(
             datos=request.model_dump()
             
             datos["p_creado_por"]=uuid.UUID("157485ce-de04-4c0a-8606-fddf9ed5a3e8")
+            datos["p_editado_por"]=datos["p_creado_por"]
             datos["p_pcid"]="Administrador"
             
             dominios=request_http.app.state.dominios_permitidos

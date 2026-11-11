@@ -61,8 +61,8 @@ class Usuarios(BaseEntidades):
         creado_por: str,
         pcid: str,
         contrasena:str,
-        email:str, # email institucional
-        dominios_permitidos:list[str],
+        email:str=None, # email institucional
+        dominios_permitidos:list[str]=None,
         id:int=None,
         codigo:uuid.UUID=None,
         nombre:str=None,

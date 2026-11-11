@@ -18,9 +18,11 @@ async def lifespan(app: FastAPI):
     try:
         dominios = await obtener_dominios(engine)
         if not dominios["estado"]:
+            app.state.dominios_permitidos=None
             raise RuntimeError(
                 f"No se pudieron cargar los dominios permitidos: {dominios['msg']}"
             )
+            
         app.state.dominios_permitidos = set(dominios["resultado"])
         tarea_background = asyncio.create_task(
             tarea_carga_datos(app,tiempo_segundos=tiempo_refresco)
@@ -29,6 +31,7 @@ async def lifespan(app: FastAPI):
         yield
         
     except Exception as error:
+        app.state.dominios_permitidos=None
         print(f"Fallo en el ciclo de vida: {type(error).__name__}: {error}")
         raise
     finally:
