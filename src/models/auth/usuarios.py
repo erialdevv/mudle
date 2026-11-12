@@ -58,9 +58,8 @@ class Usuarios(BaseEntidades):
     
     def __init__(
         self,
-        creado_por: str,
         pcid: str,
-        contrasena:str,
+        contrasena:str|None=None,
         email:str=None, # email institucional
         dominios_permitidos:list[str]=None,
         id:int=None,
@@ -71,7 +70,7 @@ class Usuarios(BaseEntidades):
         fecha_creacion: datetime = None,
         fecha_editado: datetime = None,
         editado_por: str = None,
-
+        creado_por: str=None,
     ):
         super().__init__(
             id=id,
@@ -88,20 +87,24 @@ class Usuarios(BaseEntidades):
         self.nombre=nombre
         self.apellido=apellido
         
-        verificacion_email:bool|str= verificar_email(
-            self.email, check_dominio=True, 
-            dominios_permitidos=dominios_permitidos
-        )
-        if not verificacion_email["estado"]:
-            raise ValueError(f"[EMAIL]: {verificacion_email['msg']}")
+        if email!=None:
+            verificacion_email:bool|str= verificar_email(
+                self.email, check_dominio=True, 
+                dominios_permitidos=dominios_permitidos
+            )
+            
+            if not verificacion_email["estado"]:
+                raise ValueError(f"[EMAIL]: {verificacion_email['msg']}")
         
-        verifacion_nombre:bool|str=verifacion_longitudes(self.nombre)
-        if not verifacion_nombre["estado"]:
-            raise ValueError(f"[NOMBRE]: {verifacion_longitudes["msg"]}")
+        if nombre!=None:
+            verifacion_nombre:bool|str=verifacion_longitudes(self.nombre)
+            if not verifacion_nombre["estado"]:
+                raise ValueError(f"[NOMBRE]: {verifacion_longitudes["msg"]}")
         
-        verificacion_apellido:bool|str=verifacion_longitudes(self.apellido)
-        if not verificacion_apellido["estado"]:
-            raise ValueError(f"[APELLIDO]: {verifacion_longitudes["msg"]}")
+        if apellido!=None:
+            verificacion_apellido:bool|str=verifacion_longitudes(self.apellido)
+            if not verificacion_apellido["estado"]:
+                raise ValueError(f"[APELLIDO]: {verifacion_longitudes["msg"]}")
 
 
     

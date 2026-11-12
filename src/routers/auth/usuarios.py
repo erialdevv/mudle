@@ -42,17 +42,16 @@ async def router_actualizar_usuario(
 ):
     try:
         async with engine.begin() as conn:
+            
             datos:dict=request.model_dump()
-            datos["p_creado_por"]=uuid.UUID("157485ce-de04-4c0a-8606-fddf9ed5a3e8")
-            datos["p_editado_por"]=datos["p_creado_por"]
+            datos["p_editado_por"]=uuid.UUID("157485ce-de04-4c0a-8606-fddf9ed5a3e8")
             datos["p_pcid"]="Administrador"
             
-            resultado=await servicio_actualizar_usuario()
-            
+            dominios=None
             if datos.get("email_est"):
                 dominios=list(request_http.app.state.dominios_permitidos)
-            
-            resultado+await servicio_actualizar_usuario(conn,dominios,**datos)
+          
+            resultado=await servicio_actualizar_usuario(conn,dominios,**datos)
             
             if not resultado["estado"]:
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=resultado["msg"])

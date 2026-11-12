@@ -65,13 +65,13 @@ class BaseEntidades:
     def __init__(
         self,
         codigo:uuid.UUID,
-        creado_por: str,
         pcid: str,
         anulado: bool = False, # False como valor inicial
         id:int|None=None,
         fecha_creacion: datetime|None = None,
         fecha_editado: datetime|None = None,
         editado_por: str|None= None,
+        creado_por: str|None=None,
     ):
         self.id = id
         self.codigo=codigo
@@ -82,10 +82,10 @@ class BaseEntidades:
         self.fecha_creacion = fecha_creacion
         self.fecha_editado = fecha_editado
         
-        
-        verificacion_creadopor = validar_uuid(self.creado_por)
-        if not verificacion_creadopor["estado"]:
-            raise ValueError("[CREADO_POR:]",verificacion_creadopor["msg"])
+        if creado_por!=None:
+            verificacion_creadopor = validar_uuid(self.creado_por)
+            if not verificacion_creadopor["estado"]:
+                raise ValueError("[CREADO_POR:]",verificacion_creadopor["msg"])
         
         if editado_por!=None:
             verificacion_editadopor = validar_uuid(self.editado_por)

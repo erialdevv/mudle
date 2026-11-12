@@ -2,7 +2,7 @@ from core.security.password import hash_contrasena
 from fastapi import Request
 from repositories.auth.usuarios import repo_insertar_usuario,repo_actualizar_usuario
 from models.auth.usuarios import Usuarios
-s
+
 
 async def servicio_guardar_usuario(conn,dominios_permitidos,**datos):
     try:
@@ -54,17 +54,18 @@ async def servicio_actualizar_usuario(conn,dominios_permitidos,**datos:dict):
         
         n_parametros=len(datos)-1
         
-        hipotesis1=list(datos.values()).count(None)
+        parametros_none=list(datos.values()).count(None)
         
-        if hipotesis1==n_parametros:
+        if parametros_none==n_parametros:
             return{"estado":False, "msg":"Todos los campos exceptuando el codigo estan vacios"}
         
+        contrasena_hash = None
         if datos.get("contrasena"):
-            contrasena_hash=hash_contrasena(datos["contrasena"])
+            contrasena_hash=hash_contrasena(datos.get("contrasena"))
             
-                        
-    
+            
         usuario=Usuarios(
+            codigo=datos.get("codigo"),
             editado_por=datos.get("p_editado_por"),
             pcid=datos.get("p_pcid"),
             contrasena=contrasena_hash,
@@ -82,7 +83,8 @@ async def servicio_actualizar_usuario(conn,dominios_permitidos,**datos:dict):
             "p_contrasena":usuario.contrasena,
         }
         
-        resultado:dict=repo_actualizar_usuario(conn,**parametros_sp)
+        
+        resultado:dict=await repo_actualizar_usuario(conn,**parametros_sp)
         
         return resultado
         

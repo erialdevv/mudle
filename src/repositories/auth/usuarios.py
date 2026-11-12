@@ -2,9 +2,10 @@ from sqlalchemy import text
 
 
 async def ejecutar_sp(sentencia,msg:str,conn,**datos):
+    
         parametros = ", ".join([f":{clave}" for clave in datos.keys()])
         lcsql = text(f"CALL {sentencia}({parametros})")
-        
+        print(lcsql)
         await conn.execute(lcsql, datos)
         
         return{"estado":True, "msg":msg}

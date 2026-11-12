@@ -22,7 +22,7 @@ def columnas_base():
         Column("creado_por", Uuid(as_uuid=True), nullable=False),
         Column("fecha_creacion", DateTime, server_default=func.now(), nullable=False),
         Column("editado_por", Uuid(as_uuid=True), nullable=True),
-        Column("fecha_editado", DateTime,onupdate=func.now(), nullable=True),
+        Column("fecha_editado", DateTime,server_default=func.now(), nullable=True),
         Column("pcid", String(150), nullable=False)
     ]
     
