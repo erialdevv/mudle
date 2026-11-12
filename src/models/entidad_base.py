@@ -100,22 +100,5 @@ class BaseEntidades:
         if not verificacion_anulado["estado"]:
             raise TypeError("[ANULADO:]",verificacion_anulado["msg"])
         
-    # Comportamiento
-    def actualizar_estado(self, estado: bool, editado_por: uuid.UUID|str, pcid: str):
-        verificar_estado = validar_estado(estado)
-        verificar_editadopor = validar_uuid(editado_por)
-        verificar_pcid = validar_pcid(pcid)
 
-        if not verificar_estado["estado"]:
-            raise ValueError(f"[ANULADO]: {verificar_estado['msg']}")
-
-        if not verificar_editadopor["estado"]:
-            raise ValueError(f"[EDITADO_POR]: {verificar_editadopor['msg']}")
-
-        if not verificar_pcid["estado"]:
-            raise ValueError(f"[PCID]: {verificar_pcid['msg']}")
-
-        self.editado_por = editado_por
-        self.pcid = pcid
-        self.anulado = estado
 

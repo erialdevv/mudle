@@ -65,8 +65,8 @@ async def servicio_actualizar_usuario(conn,dominios_permitidos,**datos:dict):
             
             
         usuario=Usuarios(
-            codigo=datos.get("codigo"),
             editado_por=datos.get("p_editado_por"),
+            codigo=datos.get("codigo"),
             pcid=datos.get("p_pcid"),
             contrasena=contrasena_hash,
             email=datos.get("email_est"),
@@ -77,13 +77,14 @@ async def servicio_actualizar_usuario(conn,dominios_permitidos,**datos:dict):
         
         parametros_sp:dict={
             "p_codigo":usuario.codigo,
+            "p_editado_por":usuario.editado_por,
             "p_nombre":usuario.nombre,
             "p_apellido":usuario.apellido,
             "p_email_est":usuario.email,
-            "p_contrasena":usuario.contrasena,
+            "p_contrasena":usuario.contrasena
         }
         
-        
+
         resultado:dict=await repo_actualizar_usuario(conn,**parametros_sp)
         
         return resultado
