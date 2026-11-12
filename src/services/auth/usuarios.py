@@ -1,8 +1,10 @@
 from core.security.password import hash_contrasena
-from repositories.auth.usuarios import insertar_usuario
+from fastapi import Request
+from repositories.auth.usuarios import repo_insertar_usuario,repo_actualizar_usuario
 from models.auth.usuarios import Usuarios
+s
 
-async def guardar_usuario(conn,dominios_permitidos,**datos):
+async def servicio_guardar_usuario(conn,dominios_permitidos,**datos):
     try:
         contrasena = datos.get("contrasena")
     
@@ -25,7 +27,7 @@ async def guardar_usuario(conn,dominios_permitidos,**datos):
             apellido=datos.get("apellido")
         )
         
-        datos_para_sp = {
+        parametros_sp = {
             "p_contrasena": usuario_dominio.contrasena,
             "p_email_est": usuario_dominio.email,
             "p_creado_por": usuario_dominio.creado_por,
@@ -35,7 +37,7 @@ async def guardar_usuario(conn,dominios_permitidos,**datos):
         }
 
         #aqui se encontrar errores de la ejecucion del sp
-        resultado:dict=await insertar_usuario(conn, **datos_para_sp)
+        resultado:dict=await repo_insertar_usuario(conn, **parametros_sp)
         
         return resultado
                     
@@ -45,7 +47,7 @@ async def guardar_usuario(conn,dominios_permitidos,**datos):
         #aqui se receptan los errores por si la conexion fallo o errores de la manipulacion de colecciones
         return {"estado":False, "msg":f"Error en la conexión: {str(error)}"}
     
-async def actualizar_usuario(conn, dominios_permitidos,**datos):
+async def servicio_actualizar_usuario(conn,dominios_permitidos,**datos:dict):
     try:
         if datos.get("codigo") is None or datos.get("codigo") == "":
             return {"estado": False, "msg": "No se puede continuar sin el codigo del usuario."}
@@ -59,22 +61,33 @@ async def actualizar_usuario(conn, dominios_permitidos,**datos):
         
         if datos.get("contrasena"):
             contrasena_hash=hash_contrasena(datos["contrasena"])
-        
-
-        Usuarios(
+            
+                        
+    
+        usuario=Usuarios(
             editado_por=datos.get("p_editado_por"),
             pcid=datos.get("p_pcid"),
             contrasena=contrasena_hash,
             email=datos.get("email_est"),
-            dominios_permitidos=dominios_permitidos,
+            dominios_permitidos=dominios_permitidos if datos.get("email_est") else None,
             nombre=datos.get("nombre"),
             apellido=datos.get("apellido")
         )
         
-        #falta logica para armar sp y luego llamar al repo con el sp y sus parametros
+        parametros_sp:dict={
+            "p_codigo":usuario.codigo,
+            "p_nombre":usuario.nombre,
+            "p_apellido":usuario.apellido,
+            "p_email_est":usuario.email,
+            "p_contrasena":usuario.contrasena,
+        }
+        
+        resultado:dict=repo_actualizar_usuario(conn,**parametros_sp)
+        
+        return resultado
         
     except ValueError as error:
-        pass
+        return {"estado": False, "msg": str(error)}
     except Exception as error:
-        pass
+        return {"estado":False, "msg":f"Error en la conexión: {str(error)}"}
     

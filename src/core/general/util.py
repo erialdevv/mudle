@@ -3,14 +3,11 @@ from db.connection import engine
 import asyncio
 from fastapi import FastAPI
 
-DOMINIOS_PERMITIDOS=set()
-
-async def tarea_carga_datos(app:FastAPI,tiempo_segundos:int):
-    
-    global DOMINIOS_PERMITIDOS
-    
+async def tarea_carga_datos(app: FastAPI, tiempo_segundos: int):
     while True:
         try:
+            await asyncio.sleep(tiempo_segundos)
+
             dominios = await obtener_dominios(engine)
 
             if not dominios["estado"]:
@@ -21,9 +18,7 @@ async def tarea_carga_datos(app:FastAPI,tiempo_segundos:int):
                 await asyncio.sleep(15)
                 continue
 
-            app.state.dominios_permitidos= set(dominios["resultado"])
-
-            await asyncio.sleep(tiempo_segundos)
+            app.state.dominios_permitidos = set(dominios["resultado"])
 
         except asyncio.CancelledError:
             print("Temporizador detenido.")

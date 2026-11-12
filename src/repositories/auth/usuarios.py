@@ -10,7 +10,7 @@ async def ejecutar_sp(sentencia,msg:str,conn,**datos):
         return{"estado":True, "msg":msg}
         
         
-async def insertar_usuario(conn, **datos):
+async def repo_insertar_usuario(conn, **datos):
     
     return await ejecutar_sp(
         "sp_insertar_usuario", 
@@ -19,7 +19,7 @@ async def insertar_usuario(conn, **datos):
         **datos
     )
 
-async def actualizar_usuario(conn, **datos):
+async def repo_actualizar_usuario(conn, **datos):
     return await ejecutar_sp(
         "sp_actualizar_usuario", 
         "Usuario actualizado exitosamente",

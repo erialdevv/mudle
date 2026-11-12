@@ -18,7 +18,6 @@ async def lifespan(app: FastAPI):
     try:
         dominios = await obtener_dominios(engine)
         if not dominios["estado"]:
-            app.state.dominios_permitidos=None
             raise RuntimeError(
                 f"No se pudieron cargar los dominios permitidos: {dominios['msg']}"
             )
