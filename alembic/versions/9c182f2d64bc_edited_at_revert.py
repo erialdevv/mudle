@@ -1,4 +1,4 @@
-"""editado date reverso
+"""edited_at revert
 
 Revision ID: 9c182f2d64bc
 Revises: 4627d3db3e76

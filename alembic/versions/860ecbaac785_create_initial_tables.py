@@ -1,4 +1,4 @@
-"""crear tablas iniciales
+"""create initial tables
 
 Revision ID: 860ecbaac785
 Revises: 

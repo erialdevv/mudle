@@ -1,0 +1,4 @@
+1.- To generate migrations
+uv run alembic revision --autogenerate -m "create initial tables"
+2.- To apply those migrations
+uv run alembic heads

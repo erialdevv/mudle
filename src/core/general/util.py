@@ -1,33 +1,34 @@
-from repositories.general.arranque import obtener_dominios
+from repositories.general.startup import get_domains
 from db.connection import engine
 import asyncio
 from fastapi import FastAPI
 
-async def tarea_carga_datos(app: FastAPI, tiempo_segundos: int):
+async def data_load_task(app: FastAPI, interval_seconds: int):
     while True:
         try:
-            await asyncio.sleep(tiempo_segundos)
+            await asyncio.sleep(interval_seconds)
 
-            dominios = await obtener_dominios(engine)
+            domains = await get_domains(engine)
 
-            if not dominios["estado"]:
+            if not domains["status"]:
                 print(
-                    f"Error al consultar los dominios: {dominios['msg']}. "
-                    "Reintentando en 15 segundos..."
+                    f"Error querying domains: {domains['msg']}. "
+                    "Retrying in 15 seconds..."
                 )
                 await asyncio.sleep(15)
                 continue
 
-            app.state.dominios_permitidos = set(dominios["resultado"])
+            app.state.allowed_domains = set(domains["result"])
 
         except asyncio.CancelledError:
-            print("Temporizador detenido.")
+            print("Timer stopped.")
             raise
 
         except Exception as error:
             print(
-                f"Error inesperado al actualizar los dominios: "
+                f"Unexpected error while updating domains: "
                 f"{type(error).__name__}: {error}. "
-                "Reintentando en 15 segundos..."
+                "Retrying in 15 seconds..."
             )
             await asyncio.sleep(15)
+

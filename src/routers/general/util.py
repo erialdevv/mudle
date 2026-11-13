@@ -1,49 +1,49 @@
 from fastapi import APIRouter
 from fastapi import FastAPI, HTTPException,status,Request
-from repositories.general.arranque import connect_test
+from repositories.general.startup import connect_test
 from db.connection import engine
 
 router=APIRouter(
     prefix="/config",
-    tags=["Configuracion"]
+    tags=["Configuration"]
 )
 
 @router.get(
     "/data_in_memory", 
     status_code=status.HTTP_200_OK,
-    summary="Visualizar datos cargados en memoria",
+    summary="View data loaded in memory",
     description=(
-        "Permite visualizar los datos iniciales precargados para el funcionamiento de la aplicación. "
-        "**Nota:** Actualmente, la respuesta está limitada únicamente a la información de los dominios."
+        "Allows viewing the initial data preloaded for the application to work. "
+        "**Note:** Currently, the response is limited to the domains information only."
     )
 )
 
-async def datos_cargados(request:Request):
-    dominios_validos = request.app.state.dominios_permitidos
-    if dominios_validos:
+async def loaded_data(request:Request):
+    valid_domains = request.app.state.allowed_domains
+    if valid_domains:
         return{
             "status": True,
-            "message": "Datos cargados en memoria correctamente",
-            "database": dominios_validos
+            "message": "Data loaded in memory successfully",
+            "database": valid_domains
         }
     return{
         "status":False,
-        "message":"Memoria vacia",
-        "database": dominios_validos
+        "message":"Memory is empty",
+        "database": valid_domains
     }
     
 @router.get("/isconnect", status_code=status.HTTP_200_OK)
 async def db_check():
-    resultado = await connect_test(engine)
+    result = await connect_test(engine)
     
-    is_connected, error_detail, db_name = resultado[0], resultado[1], resultado[2]
+    is_connected, error_detail, db_name = result[0], result[1], result[2]
     
     if not is_connected:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
             detail={
                 "status": "error",
-                "message": "No se pudo establecer la conexión con el servidor.",
+                "message": "Could not establish a connection with the server.",
                 "database": db_name,
                 "technical_details": error_detail
             }
@@ -51,6 +51,6 @@ async def db_check():
         
     return {
         "status": "success",
-        "message": "Conexión establecida exitosamente.",
+        "message": "Connection established successfully.",
         "database": db_name
     }

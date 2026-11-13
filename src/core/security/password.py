@@ -4,25 +4,23 @@ from db.config import time_cost_env, memory_cost_env, parallelism_env
 
 ph = PasswordHasher(time_cost=time_cost_env, memory_cost=memory_cost_env, parallelism=parallelism_env)
 
-def hash_contrasena(contrasena: str) -> str:
-    return ph.hash(contrasena)
+def hash_password(password: str) -> str:
+    return ph.hash(password)
 
-def verificar_contrasena(contrasena: str, hash_bd: str) -> dict:
+def verify_password(password: str, db_hash: str) -> dict:
     try:
-        ph.verify(hash_bd, contrasena)
+        ph.verify(db_hash, password)
         return {
-            "estado": True,
-            "msg": "Contraseña verificada exitosamente."
+            "status": True,
+            "msg": "Password verified successfully."
         }
     except VerifyMismatchError:
         return {
-            "estado": False,
-            "msg": "Contraseña o usuario incorrectos."
+            "status": False,
+            "msg": "Incorrect password or user."
         }
     except Exception:
         return {
-            "estado": False,
-            "msg": "Error en la autenticación."
+            "status": False,
+            "msg": "Authentication error."
         }
-
-

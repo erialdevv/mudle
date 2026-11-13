@@ -1,1 +1,1 @@
-from db.tablas.auth.usuarios import usuario_tabla
+from db.tables.auth.users import users_table

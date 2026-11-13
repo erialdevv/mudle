@@ -1,4 +1,4 @@
-"""editado date generado automaticamente
+"""edited_at auto generated
 
 Revision ID: 4627d3db3e76
 Revises: 860ecbaac785
