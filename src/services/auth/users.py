@@ -1,13 +1,12 @@
 from core.security.password import hash_password
-from fastapi import Request
-from repositories.auth.users import repo_insert_user,repo_update_user
+from repositories.auth.users import repo_insert_user, repo_update_user
 from models.auth.users import User
 
 
-async def service_save_user(conn, allowed_domains, **data):
+async def service_save_user(conn, allowed_domains, **data) -> dict:
     try:
         password_hash = hash_password(data["password"])
-        
+
         domain_user = User(
             created_by=data.get("created_by"),
             pcid=data.get("pcid"),
@@ -17,8 +16,8 @@ async def service_save_user(conn, allowed_domains, **data):
             first_name=data["first_name"],
             last_name=data["last_name"]
         )
-        
-        sp_parameters = {
+
+        sp_parameters: dict = {
             "p_contrasena": domain_user.password,
             "p_email_est": domain_user.email,
             "p_creado_por": domain_user.created_by,
@@ -27,15 +26,24 @@ async def service_save_user(conn, allowed_domains, **data):
             "p_apellido": domain_user.last_name
         }
 
-        return await repo_insert_user(conn, **sp_parameters)
-                    
-    except ValueError as val_error:
-        return {"status": False, "msg": str(val_error)}
-    except Exception as error:
-        return {"status": False, "msg": f"Connection error: {str(error)}"}
+        # 4xx/5xx: Error devuelto por el procedimiento almacenado
+        save_result: dict = await repo_insert_user(conn, **sp_parameters)
+        if not save_result["status"]:
+            return {
+                "status": False,
+                "status_code": save_result.get("status_code", 400),
+                "msg": save_result["msg"]
+            }
 
-    
-async def service_update_user(conn, allowed_domains, **data: dict):
+        return {"status": True, "msg": save_result["msg"]}
+
+    except ValueError as val_error:
+        return {"status": False, "status_code": 400, "msg": str(val_error)}
+    except Exception as error:
+        return {"status": False, "status_code": 500, "msg": f"Error inesperado: {str(error)}"}
+
+
+async def service_update_user(conn, allowed_domains, **data) -> dict:
     try:
         password = data.get("password")
         password_hash = hash_password(password) if password else None
@@ -60,10 +68,18 @@ async def service_update_user(conn, allowed_domains, **data: dict):
             "p_contrasena": user.password
         }
 
-        return await repo_update_user(conn, **sp_parameters)
+        # 4xx/5xx: Error devuelto por el procedimiento almacenado
+        update_result: dict = await repo_update_user(conn, **sp_parameters)
+        if not update_result["status"]:
+            return {
+                "status": False,
+                "status_code": update_result.get("status_code", 400),
+                "msg": update_result["msg"]
+            }
 
-    except ValueError as error:
-        return {"status": False, "msg": str(error)}
+        return {"status": True, "msg": update_result["msg"]}
+
+    except ValueError as val_error:
+        return {"status": False, "status_code": 400, "msg": str(val_error)}
     except Exception as error:
-        return {"status": False, "msg": f"Connection error: {str(error)}"}
-
+        return {"status": False, "status_code": 500, "msg": f"Error inesperado: {str(error)}"}

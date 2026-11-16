@@ -1,5 +1,4 @@
-from fastapi import APIRouter
-from fastapi import FastAPI, HTTPException,status,Request
+from fastapi import APIRouter, HTTPException, status, Request
 from repositories.general.startup import connect_test
 from db.connection import engine
 
@@ -11,10 +10,10 @@ router=APIRouter(
 @router.get(
     "/data_in_memory", 
     status_code=status.HTTP_200_OK,
-    summary="View data loaded in memory",
+    summary="Ver datos cargados en memoria",
     description=(
-        "Allows viewing the initial data preloaded for the application to work. "
-        "**Note:** Currently, the response is limited to the domains information only."
+        "Permite ver los datos iniciales precargados para el funcionamiento de la aplicación. "
+        "**Nota:** Actualmente la respuesta se limita a la información de dominios."
     )
 )
 
@@ -23,12 +22,12 @@ async def loaded_data(request:Request):
     if valid_domains:
         return{
             "status": True,
-            "message": "Data loaded in memory successfully",
+            "msg": "Datos cargados en memoria exitosamente",
             "database": valid_domains
         }
     return{
-        "status":False,
-        "message":"Memory is empty",
+        "status": False,
+        "msg":"La memoria está vacía",
         "database": valid_domains
     }
     
@@ -42,15 +41,15 @@ async def db_check():
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
             detail={
-                "status": "error",
-                "message": "Could not establish a connection with the server.",
+                "status": False,
+                "msg": "No se pudo establecer conexión con el servidor.",
                 "database": db_name,
                 "technical_details": error_detail
             }
         )
         
     return {
-        "status": "success",
-        "message": "Connection established successfully.",
+        "status": True,
+        "msg": "Conexión establecida exitosamente.",
         "database": db_name
     }

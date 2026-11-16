@@ -4,16 +4,16 @@ from datetime import datetime
 
 def validate_uuid(id_to_validate:str|uuid.UUID, version: int = 4) -> dict: 
     """
-    Usado para también verificar IDs de campos de auditoría (creadopor y editadopor).
+    Usado para también verificar IDs de campos de auditoría (created_by y edited_by).
     Valida un UUID válido.
-    Entrega un diccionario con 'estado' y 'msg' como llaves.
+    Entrega un diccionario con 'status' y 'msg' como llaves.
     """
     
     def validate_version(uuid_object:uuid.UUID, inner_version:int=version):
         if uuid_object.version==inner_version:
-            return {"status": True, "msg": "Validation successful."}
+            return {"status": True, "msg": "Validación exitosa."}
         else:
-            return {"status": False, "msg": "Valid UUID, but the version is incorrect."}
+            return {"status": False, "msg": "El UUID es válido, pero la versión es incorrecta."}
     
     if isinstance(id_to_validate,uuid.UUID):
         return validate_version(id_to_validate)
@@ -25,11 +25,11 @@ def validate_uuid(id_to_validate:str|uuid.UUID, version: int = 4) -> dict:
         except ValueError:
             return {
                 "status": False, 
-                "msg": f"The identifier '{id_to_validate}' does not have a valid UUID format."
+                "msg": f"El identificador '{id_to_validate}' no tiene un formato UUID válido."
             }
     return {
         "status":False,
-        "msg": f"Data type '{type(id_to_validate).__name__}' is not valid for validation."
+        "msg": f"El tipo de dato '{type(id_to_validate).__name__}' no es válido para la validación."
     }
         
 def validate_pcid(text:str)->dict:
@@ -37,27 +37,27 @@ def validate_pcid(text:str)->dict:
     if not(text.strip()):
         return{
             "status":False,
-            "msg":"PcID field is empty, please enter one before continuing."
+            "msg":"El campo PcID está vacío, ingréselo antes de continuar."
         }
     
     if len(text)>150:
         return{
             "status":False,
-            "msg":"Character limit exceeded."
+            "msg":"Se excedió el límite de caracteres."
         }
     
-    return {"status":True,"msg":"Validation successful."}
+    return {"status":True,"msg":"Validación exitosa."}
 
 def validate_status(status:bool):
     if status is None or not isinstance(status, bool):
         return{
             "status":False,
-            "msg":"The status cannot be empty and must be a boolean value (True or False)."
+            "msg":"El estado no puede estar vacío y debe ser un valor booleano (True o False)."
         }
 
     return{
         "status":True,
-        "msg":"Validation successful."
+        "msg":"Validación exitosa."
     }
 
 class BaseEntity:

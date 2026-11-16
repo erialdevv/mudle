@@ -1,28 +1,19 @@
-from sqlalchemy import text
+from repositories.general.util import execute_sp
 
 
-async def execute_sp(statement,msg:str,conn,**data):
-    
-        parameters = ", ".join([f":{key}" for key in data.keys()])
-        sql = text(f"CALL {statement}({parameters})")
-        print(sql)
-        await conn.execute(sql, data)
-        
-        return{"status":True, "msg":msg}
-        
-        
-async def repo_insert_user(conn, **data):
-    
+async def repo_insert_user(conn, **data) -> dict:
     return await execute_sp(
-        "sp_insertar_usuario", 
-        "User inserted successfully",
-        conn, 
+        "sp_insertar_usuario",
+        "Usuario registrado exitosamente.",
+        conn,
         **data
     )
 
-async def repo_update_user(conn, **data):
+
+async def repo_update_user(conn, **data) -> dict:
     return await execute_sp(
-        "sp_actualizar_usuario", 
-        "User updated successfully",
-        conn, 
-        **data)
+        "sp_actualizar_usuario",
+        "Usuario actualizado exitosamente.",
+        conn,
+        **data
+    )

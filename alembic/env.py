@@ -3,9 +3,9 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from db.columnas_base import metadata
+from db.base_columns import metadata
 from db.config import database_url
-import db.tablas
+import db.tables
 
 config = context.config
 
@@ -49,6 +49,7 @@ def run_migrations_online() -> None:
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
+            compare_server_default=True,
             include_object=lambda obj, name, type_, reflected, compare_to:
                 not (type_ == "table" and reflected and compare_to is None)
         )

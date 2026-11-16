@@ -1,12 +1,9 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException,status
+from fastapi import FastAPI
 from db.connection import engine
 from db.config import refresh_interval
 from repositories.general.startup import get_domains
 import asyncio
-import asyncio
-from contextlib import asynccontextmanager
-from fastapi import FastAPI
 from core.general.util import  data_load_task
 from routers import router
 
@@ -19,7 +16,7 @@ async def lifespan(app: FastAPI):
         domains = await get_domains(engine)
         if not domains["status"]:
             raise RuntimeError(
-                f"Could not load the allowed domains: {domains['msg']}"
+                f"No se pudieron cargar los dominios permitidos: {domains['msg']}"
             )
             
         app.state.allowed_domains = set(domains["result"])
@@ -31,7 +28,7 @@ async def lifespan(app: FastAPI):
         
     except Exception as error:
         app.state.allowed_domains=None
-        print(f"Lifespan failure: {type(error).__name__}: {error}")
+        print(f"Fallo en el ciclo de vida de la aplicación: {type(error).__name__}: {error}")
         raise
     finally:
         if background_task:

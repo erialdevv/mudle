@@ -12,7 +12,7 @@ def verify_email(email: str, check_domain: bool = False, allowed_domains: list[s
     if not email or not email.strip():
         return {
             "status": False,
-            "msg": "Please enter an email address."
+            "msg": "Por favor ingrese un correo electrónico."
         }
     
     try:
@@ -22,17 +22,17 @@ def verify_email(email: str, check_domain: bool = False, allowed_domains: list[s
             if response.domain not in allowed_domains:
                 return {
                     "status": False,
-                    "msg": f"The domain '{response.domain}' is not allowed."
+                    "msg": f"El dominio '{response.domain}' no está permitido."
                 }
         return {
             "status": True,
-            "msg": "The email address was validated successfully."
+            "msg": "El correo electrónico fue validado exitosamente."
         }
         
     except EmailNotValidError as error:
         return {
             "status": False,
-            "msg": f"The email address is not valid: {str(error)}."
+            "msg": f"El correo electrónico no es válido: {str(error)}."
         }
 
     
@@ -41,16 +41,16 @@ def verify_length(value:str|None):
         if len(value)>150:
             return{
                 "status":False,
-                "msg":"The referenced field exceeded the allowed character limit."
+                "msg":"El campo excedió el límite de caracteres permitido."
             }
     else:
         return{
             "status":False,
-            "msg":"The entered field is empty."
+            "msg":"El campo ingresado está vacío."
         }
     return{
         "status":True,
-        "msg":"Validation successful."
+        "msg":"Validación exitosa."
     }
 
 
@@ -60,7 +60,7 @@ class User(BaseEntity):
         self,
         pcid: str,
         password:str|None=None,
-        email:str=None, # email institucional
+        email:str=None, # Correo institucional
         allowed_domains:list[str]=None,
         id:int=None,
         code:uuid.UUID=None,

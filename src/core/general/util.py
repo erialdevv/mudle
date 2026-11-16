@@ -12,8 +12,8 @@ async def data_load_task(app: FastAPI, interval_seconds: int):
 
             if not domains["status"]:
                 print(
-                    f"Error querying domains: {domains['msg']}. "
-                    "Retrying in 15 seconds..."
+                    f"Error al consultar los dominios: {domains['msg']}. "
+                    "Reintentando en 15 segundos..."
                 )
                 await asyncio.sleep(15)
                 continue
@@ -21,14 +21,14 @@ async def data_load_task(app: FastAPI, interval_seconds: int):
             app.state.allowed_domains = set(domains["result"])
 
         except asyncio.CancelledError:
-            print("Timer stopped.")
+            print("Temporizador detenido.")
             raise
 
         except Exception as error:
             print(
-                f"Unexpected error while updating domains: "
+                f"Error inesperado al actualizar los dominios: "
                 f"{type(error).__name__}: {error}. "
-                "Retrying in 15 seconds..."
+                "Reintentando en 15 segundos..."
             )
             await asyncio.sleep(15)
 
