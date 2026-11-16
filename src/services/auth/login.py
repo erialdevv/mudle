@@ -19,6 +19,8 @@ async def service_login(conn,**data):
         resultado:dict=verify_password(password,user_valid.get("contrasena"))
         
         if resultado["status"]:
+            #el token generado lleva informacion importante del usuario para
+            #su uso en el front, revisar metodo create_token
             token = create_token(user_valid["codigo"], user_valid["nombre"])
             return{
                 "status":True,

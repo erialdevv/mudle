@@ -82,6 +82,7 @@ class BaseEntity:
         self.created_at = created_at
         self.edited_at = edited_at
         
+        
         if created_by!=None:
             created_by_check = validate_uuid(self.created_by)
             if not created_by_check["status"]:

@@ -41,8 +41,8 @@ async def service_update_user(conn, allowed_domains, **data: dict):
         password_hash = hash_password(password) if password else None
 
         user = User(
+            id=data.get("id"),
             edited_by=data.get("edited_by"),
-            code=data["code"],
             pcid=data.get("pcid"),
             password=password_hash,
             email=data.get("institutional_email"),
@@ -52,7 +52,7 @@ async def service_update_user(conn, allowed_domains, **data: dict):
         )
 
         sp_parameters: dict = {
-            "p_codigo": user.code,
+            "p_id": int(user.id),
             "p_editado_por": user.edited_by,
             "p_nombre": user.first_name,
             "p_apellido": user.last_name,

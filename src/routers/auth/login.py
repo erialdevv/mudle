@@ -8,7 +8,7 @@ router=APIRouter(
     tags=["Login"],
 )
 
-@router.post("/login",status_code=status.HTTP_201_CREATED)
+@router.post("",status_code=status.HTTP_201_CREATED)
 async def router_login(request:LoginRequest):
     try:
         async with engine.begin() as conn:
