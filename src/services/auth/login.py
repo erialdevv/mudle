@@ -31,12 +31,12 @@ async def service_login(conn, **data) -> dict:
             return {"status": False, "status_code": 401, "msg": INVALID_CREDENTIALS_MSG}
 
         # 500: Error interno al firmar los JWT (el detalle va al log, no al cliente)
-        access_result: dict = create_access_token(user_valid["code"], user_valid["first_name"])
+        access_result: dict = create_access_token(user_valid["id"], user_valid["code"], user_valid["first_name"])
         if not access_result["status"]:
             logger.error(access_result["msg"])
             return {"status": False, "status_code": 500, "msg": "No se pudo generar el token de acceso."}
 
-        refresh_result: dict = create_refresh_token(user_valid["code"], user_valid["first_name"])
+        refresh_result: dict = create_refresh_token(user_valid["id"], user_valid["code"], user_valid["first_name"])
         if not refresh_result["status"]:
             logger.error(refresh_result["msg"])
             return {"status": False, "status_code": 500, "msg": "No se pudo generar el token de refresco."}
@@ -93,7 +93,7 @@ async def service_validate_token(conn, **data) -> dict:
             status_code = sp_status if sp_status in (500, 503) else 401
             return {"status": False, "status_code": status_code, "msg": lcsql_result["msg"]}
 
-        access_result: dict = create_access_token(data["code"], data["pcid"])
+        access_result: dict = create_access_token(data["id"], data["code"], data["pcid"])
         if not access_result["status"]:
             logger.error(access_result["msg"])
             return {"status": False, "status_code": 500, "msg": "No se pudo generar el token de acceso."}

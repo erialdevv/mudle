@@ -2,7 +2,7 @@ import logging
 from fastapi import APIRouter, HTTPException, status, Request, Path, Depends
 from db.connection import engine
 from core.security.token import validate_acces_token
-from schemas.auth.users import CreateUserRequest, UpdateUserRequest, CreateUserResponse, UpdateUserResponse
+from schemas.auth.users import CreateUserRequest, UpdateUserRequest, CreateUserResponse, UpdateUserResponse,ReadUserResponse,ReadUserRequest
 from schemas.general.responses import error_responses, http_error_from_result
 from services.auth.users import service_update_user, service_save_user
 
@@ -52,6 +52,30 @@ async def router_insert_user(
             detail="Ocurrió un error interno al procesar la solicitud."
         )
 
+@router.get(
+    "/me",
+    response_model=ReadUserResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Consultar datos de usuario en sesión.",
+)
+async def router_get_profile(
+    token_data: dict = Depends(validate_acces_token)
+):
+    try:
+        sp_parameters:dict={
+            "p_id":token_data["id"]
+        }
+        
+        
+    except HTTPException:
+            raise
+    except Exception:
+            logger.exception("Error inesperado en %s", "PATCH /users/update/{id}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Ocurrió un error interno al procesar la solicitud."
+            )
+        
 
 @router.patch(
     "/update/{id}",

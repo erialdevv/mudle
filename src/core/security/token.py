@@ -10,7 +10,7 @@ from db.config import TokenConfig
 security = HTTPBearer()
 
 
-def create_access_token(code: uuid.UUID, pcid: str) -> dict:
+def create_access_token(user_id: int, code: uuid.UUID, pcid: str) -> dict:
     try:
         if not TokenConfig.secret_key or not TokenConfig.algorithm:
             raise ValueError("Faltan variables de configuración para firmar el token.")
@@ -20,6 +20,7 @@ def create_access_token(code: uuid.UUID, pcid: str) -> dict:
 
         token_payload: dict = {
             "sub": str(code),
+            "uid": user_id,
             "pcid": pcid,
             "iat": time_now,
             "exp": expiration,
@@ -42,7 +43,7 @@ def create_access_token(code: uuid.UUID, pcid: str) -> dict:
         }
 
 
-def create_refresh_token(code: uuid.UUID,pcid: str) -> dict:
+def create_refresh_token(user_id: int, code: uuid.UUID, pcid: str) -> dict:
     try:
         if not TokenConfig.secret_key or not TokenConfig.algorithm:
             raise ValueError("Faltan variables de configuración para firmar el token.")
@@ -53,6 +54,7 @@ def create_refresh_token(code: uuid.UUID,pcid: str) -> dict:
 
         token_payload: dict ={
             "sub": str(code),
+            "uid": user_id,
             "pcid": pcid,
             "exp": expiration,
             "jti": str(token_id),
@@ -91,11 +93,12 @@ def validate_acces_token(credentials: HTTPAuthorizationCredentials = Depends(sec
             TokenConfig.secret_key, 
             algorithms=[TokenConfig.algorithm],
             options={
-                "require": ["exp","sub","type"]
+                "require": ["exp","sub","uid","type"]
             }
         )
 
         user_code: str | None = payload.get("sub")
+        user_id: int | None = payload.get("uid")
         pcid: str | None = payload.get("pcid")
         type_token=payload.get("type")
         
@@ -106,10 +109,11 @@ def validate_acces_token(credentials: HTTPAuthorizationCredentials = Depends(sec
                 headers={"WWW-Authenticate": "Bearer"},
             )
         
-        if user_code is None or pcid is None:
+        if user_code is None or pcid is None or not isinstance(user_id, int) or isinstance(user_id, bool):
             raise invalid_credentials
 
         return {
+            "id": user_id,
             "code": uuid.UUID(user_code),
             "pcid": pcid
         }
@@ -133,19 +137,21 @@ def validate_refresh_token(refresh_token: str | None = Cookie(default=None)) -> 
             refresh_token, 
             TokenConfig.secret_key_refresh, 
             algorithms=[TokenConfig.algorithm],
-            options={"require": ["exp", "sub", "jti", "type"]}
+            options={"require": ["exp", "sub", "uid", "jti", "type"]}
         )
         
         user_code: str = payload["sub"]
         jti: str = payload["jti"]
         type_token: str = payload["type"]
+        user_id: int | None = payload["uid"]
         pcid: str | None = payload.get("pcid")
         
-        if pcid is None or type_token != TokenConfig.token_type_refresh:
+        if pcid is None or not isinstance(user_id, int) or isinstance(user_id, bool) or type_token != TokenConfig.token_type_refresh:
             raise invalid_credentials
         
         return {
-            "jti": uuid.UUID(jti),        
+            "jti": uuid.UUID(jti),
+            "id": user_id,
             "code": uuid.UUID(user_code),
             "pcid": pcid     
         }

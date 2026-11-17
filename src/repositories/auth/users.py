@@ -17,3 +17,7 @@ async def repo_update_user(conn, **data) -> dict:
         conn,
         **data
     )
+
+
+async def repo_get_user_by_id(conn,**data)->dict:
+    pass
