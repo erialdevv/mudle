@@ -2,9 +2,9 @@ from datetime import datetime, timedelta, timezone
 import uuid
 import jwt
 from jwt.exceptions import PyJWTError
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Cookie
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from db.config import exp_access_token_env, exp_refresh_token_env, secret_key_env, algorithm_env
+from db.config import TokenConfig
 
 # Se usa HTTPBearer para pegar el token directo en /docs y enviar JSON normal en /login
 security = HTTPBearer()
@@ -12,24 +12,25 @@ security = HTTPBearer()
 
 def create_access_token(code: uuid.UUID, pcid: str) -> dict:
     try:
-        if not secret_key_env or not algorithm_env:
+        if not TokenConfig.secret_key or not TokenConfig.algorithm:
             raise ValueError("Faltan variables de configuración para firmar el token.")
 
         time_now = datetime.now(timezone.utc)
-        expiration = time_now + timedelta(minutes=int(exp_access_token_env))
+        expiration = time_now + timedelta(minutes=int(TokenConfig.exp_access_token))
 
         token_payload: dict = {
             "sub": str(code),
             "pcid": pcid,
             "iat": time_now,
-            "exp": expiration
+            "exp": expiration,
+            "type":"access"
         }
 
         return {
             "status": True,
             "msg": "Token de acceso creado exitosamente.",
             "detail": {
-                "token": jwt.encode(token_payload, secret_key_env, algorithm=algorithm_env)
+                "token": jwt.encode(token_payload, TokenConfig.secret_key, algorithm=TokenConfig.algorithm)
             }
         }
 
@@ -41,26 +42,28 @@ def create_access_token(code: uuid.UUID, pcid: str) -> dict:
         }
 
 
-def create_refresh_token(code: uuid.UUID) -> dict:
+def create_refresh_token(code: uuid.UUID,pcid: str) -> dict:
     try:
-        if not secret_key_env or not algorithm_env:
+        if not TokenConfig.secret_key or not TokenConfig.algorithm:
             raise ValueError("Faltan variables de configuración para firmar el token.")
 
         time_now = datetime.now(timezone.utc)
-        expiration = time_now + timedelta(minutes=int(exp_refresh_token_env))
+        expiration = time_now + timedelta(minutes=int(TokenConfig.exp_refresh_token))
         token_id = uuid.uuid4()
 
-        token_payload: dict = {
+        token_payload: dict ={
             "sub": str(code),
+            "pcid": pcid,
             "exp": expiration,
-            "jti": str(token_id)
+            "jti": str(token_id),
+            "type":"refresh"
         }
 
         return {
             "status": True,
             "msg": "Token de refresco creado exitosamente.",
             "detail": {
-                "token": jwt.encode(token_payload, secret_key_env, algorithm=algorithm_env),
+                "token": jwt.encode(token_payload, TokenConfig.secret_key_refresh, algorithm=TokenConfig.algorithm),
                 "token_id": token_id,
                 "exp": expiration
             }
@@ -74,7 +77,7 @@ def create_refresh_token(code: uuid.UUID) -> dict:
         }
 
 
-def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
+def validate_acces_token(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
 
     invalid_credentials = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -83,11 +86,26 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
     )
     try:
         token = credentials.credentials
-        payload = jwt.decode(token, secret_key_env, algorithms=[algorithm_env])
+        payload = jwt.decode(
+            token, 
+            TokenConfig.secret_key, 
+            algorithms=[TokenConfig.algorithm],
+            options={
+                "require": ["exp","sub","type"]
+            }
+        )
 
         user_code: str | None = payload.get("sub")
         pcid: str | None = payload.get("pcid")
-
+        type_token=payload.get("type")
+        
+        if type_token!=TokenConfig.token_type_access:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="El token enviado no es un token de acceso",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        
         if user_code is None or pcid is None:
             raise invalid_credentials
 
@@ -96,5 +114,41 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
             "pcid": pcid
         }
 
+    except (PyJWTError, ValueError):
+        raise invalid_credentials
+
+
+def validate_refresh_token(refresh_token: str | None = Cookie(default=None)) -> dict:
+    
+    invalid_credentials = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Token inválido o expirado"
+    )
+    
+    if not refresh_token:
+        raise invalid_credentials
+
+    try:
+        payload = jwt.decode(
+            refresh_token, 
+            TokenConfig.secret_key_refresh, 
+            algorithms=[TokenConfig.algorithm],
+            options={"require": ["exp", "sub", "jti", "type"]}
+        )
+        
+        user_code: str = payload["sub"]
+        jti: str = payload["jti"]
+        type_token: str = payload["type"]
+        pcid: str | None = payload.get("pcid")
+        
+        if pcid is None or type_token != TokenConfig.token_type_refresh:
+            raise invalid_credentials
+        
+        return {
+            "jti": uuid.UUID(jti),        
+            "code": uuid.UUID(user_code),
+            "pcid": pcid     
+        }
+        
     except (PyJWTError, ValueError):
         raise invalid_credentials

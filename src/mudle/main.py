@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from db.connection import engine
-from db.config import refresh_interval
+from db.config import DBConfig
 from repositories.general.startup import get_domains
 import asyncio
 from core.general.util import  data_load_task
@@ -21,7 +21,7 @@ async def lifespan(app: FastAPI):
             
         app.state.allowed_domains = set(domains["result"])
         background_task = asyncio.create_task(
-            data_load_task(app,interval_seconds=refresh_interval)
+            data_load_task(app,interval_seconds=DBConfig.refresh_interval)
         )
         
         yield

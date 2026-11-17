@@ -1,6 +1,31 @@
+import logging
+import re
 from core.security.password import hash_password
 from repositories.auth.users import repo_insert_user, repo_update_user
 from models.auth.users import User
+
+logger = logging.getLogger(__name__)
+INTERNAL_MSG = "Ocurrió un error interno al procesar la solicitud."
+
+_FIELD_MAP = {
+    "EMAIL": "institutional_email",
+    "FIRST_NAME": "first_name",
+    "LAST_NAME": "last_name",
+}
+
+
+def _validation_error(val_error: ValueError) -> dict:
+    """Errores de campo del modelo (`[EMAIL]: ...`) -> 422; cualquier otro ValueError -> 400."""
+    message = str(val_error)
+    match = re.match(r"^\[(\w+)\]:\s*(.*)$", message)
+    if match and match.group(1) in _FIELD_MAP:
+        return {
+            "status": False,
+            "status_code": 422,
+            "field": _FIELD_MAP[match.group(1)],
+            "msg": match.group(2),
+        }
+    return {"status": False, "status_code": 400, "msg": message}
 
 
 async def service_save_user(conn, allowed_domains, **data) -> dict:
@@ -38,9 +63,10 @@ async def service_save_user(conn, allowed_domains, **data) -> dict:
         return {"status": True, "msg": save_result["msg"]}
 
     except ValueError as val_error:
-        return {"status": False, "status_code": 400, "msg": str(val_error)}
-    except Exception as error:
-        return {"status": False, "status_code": 500, "msg": f"Error inesperado: {str(error)}"}
+        return _validation_error(val_error)
+    except Exception:
+        logger.exception("Error inesperado al crear el usuario")
+        return {"status": False, "status_code": 500, "msg": INTERNAL_MSG}
 
 
 async def service_update_user(conn, allowed_domains, **data) -> dict:
@@ -80,6 +106,7 @@ async def service_update_user(conn, allowed_domains, **data) -> dict:
         return {"status": True, "msg": update_result["msg"]}
 
     except ValueError as val_error:
-        return {"status": False, "status_code": 400, "msg": str(val_error)}
-    except Exception as error:
-        return {"status": False, "status_code": 500, "msg": f"Error inesperado: {str(error)}"}
+        return _validation_error(val_error)
+    except Exception:
+        logger.exception("Error inesperado al actualizar el usuario")
+        return {"status": False, "status_code": 500, "msg": INTERNAL_MSG}

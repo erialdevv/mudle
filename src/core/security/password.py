@@ -1,8 +1,8 @@
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
-from db.config import time_cost_env, memory_cost_env, parallelism_env
+from db.config import HashConfig
 
-ph = PasswordHasher(time_cost=time_cost_env, memory_cost=memory_cost_env, parallelism=parallelism_env)
+ph = PasswordHasher(time_cost=HashConfig.time_cost, memory_cost=HashConfig.memory_cost, parallelism=HashConfig.parallelism)
 
 def hash_password(password: str) -> str:
     return ph.hash(password)

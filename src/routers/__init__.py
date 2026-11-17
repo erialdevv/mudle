@@ -9,4 +9,3 @@ router=APIRouter()
 router.include_router(utilities)
 router.include_router(users)
 router.include_router(login)
-

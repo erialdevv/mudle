@@ -86,17 +86,17 @@ class BaseEntity:
         if created_by!=None:
             created_by_check = validate_uuid(self.created_by)
             if not created_by_check["status"]:
-                raise ValueError("[CREATED_BY:]",created_by_check["msg"])
+                raise ValueError(f"[CREATED_BY]: {created_by_check['msg']}")
         
         if edited_by!=None:
             edited_by_check = validate_uuid(self.edited_by)
             if not edited_by_check["status"]:
-                raise ValueError("[EDITED_BY:]",edited_by_check["msg"])
+                raise ValueError(f"[EDITED_BY]: {edited_by_check['msg']}")
         
         pcid_check=validate_pcid(self.pcid)
         if not pcid_check["status"]:
-            raise ValueError("[PCID: ]",pcid_check["msg"])
+            raise ValueError(f"[PCID]: {pcid_check['msg']}")
         
         voided_check=validate_status(self.voided)
         if not voided_check["status"]:
-            raise TypeError("[VOIDED:]",voided_check["msg"])
+            raise TypeError(f"[VOIDED]: {voided_check['msg']}")

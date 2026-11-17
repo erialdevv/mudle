@@ -4,7 +4,7 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from db.base_columns import metadata
-from db.config import database_url
+from db.config import DBConfig
 import db.tables
 
 config = context.config
@@ -15,12 +15,12 @@ if config.config_file_name is not None:
 target_metadata = metadata
 
 #
-if not database_url:
+if not DBConfig.database_url:
     raise RuntimeError("DATABASE_URL no está configurada")
 
 config.set_main_option(
     "sqlalchemy.url",
-    database_url.replace("%", "%%")
+    DBConfig.database_url.replace("%", "%%")
 )
 
 

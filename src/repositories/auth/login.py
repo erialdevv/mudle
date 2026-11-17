@@ -29,3 +29,19 @@ async def repo_insert_refresh_token(conn, **data) -> dict:
         conn,
         **data
     )
+
+async def repo_validar_refresh_token(conn,**data)->dict:
+    return await execute_sp(
+        "sp_validar_refresh_token",
+        "Token de refresco validado correctamente.",
+        conn,
+        **data
+    )
+    
+async def repo_logout(conn,**data)->dict:
+    return await execute_sp(
+        "sp_anular_refresh_token",
+        "Token anulado correctamente.",
+        conn,
+        **data
+    )

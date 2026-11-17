@@ -1,17 +1,28 @@
+import logging
 from datetime import datetime, timezone
-from fastapi import APIRouter, HTTPException, status, Response
+from fastapi import APIRouter, HTTPException, status, Response,Depends
 from db.connection import engine
-from db.config import secure_env, samesite_env, http_only_env
-from schemas.auth.login import LoginRequest
-from services.auth.login import service_login
+from db.config import CookieConfig
+from schemas.auth.login import LoginRequest, LoginResponse, RefreshResponse
+from schemas.general.responses import error_responses, BaseResponse
+from services.auth.login import service_login, service_validate_token, service_logout
+from core.security.token import validate_refresh_token
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
-    prefix="/login",
+    prefix="/auth",
     tags=["Login"],
 )
 
-
-@router.post("", status_code=status.HTTP_200_OK)
+@router.post(
+    "/login",
+    status_code=status.HTTP_200_OK,
+    response_model=LoginResponse,
+    summary="Iniciar sesión",
+    description="Valida credenciales y devuelve el access token. El refresh token se entrega en cookie HttpOnly.",
+    responses=error_responses(401, 422, 500, 503),
+)
 async def router_login(request: LoginRequest, response: Response):
     try:
         async with engine.begin() as conn:
@@ -33,9 +44,9 @@ async def router_login(request: LoginRequest, response: Response):
             response.set_cookie(
                 key="refresh_token",
                 value=detail["refresh_token"],
-                httponly=http_only_env,
-                secure=secure_env,
-                samesite=samesite_env,
+                httponly=CookieConfig.http_only,
+                secure=CookieConfig.secure,
+                samesite=CookieConfig.samesite,
                 path="/auth",
                 max_age=max_age_seconds
             )
@@ -52,5 +63,93 @@ async def router_login(request: LoginRequest, response: Response):
 
     except HTTPException:
         raise
-    except Exception as error:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(error))
+    except Exception:
+        logger.exception("Error inesperado en %s", "/auth/login")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Ocurrió un error interno al procesar la solicitud."
+        )
+
+
+@router.post(
+    "/refresh",
+    status_code=status.HTTP_200_OK,
+    response_model=RefreshResponse,
+    summary="Renovar access token",
+    description="Genera un nuevo access token a partir del refresh token almacenado en la cookie.",
+    responses=error_responses(401, 500, 503),
+)
+async def router_refresh(data_refresh_token=Depends(validate_refresh_token)):
+    try:
+        async with engine.begin() as conn:
+            
+            result=await service_validate_token(conn, **data_refresh_token)
+       
+            if not result["status"]:
+                raise HTTPException(
+                    status_code=result["status_code"],
+                    detail=result["msg"]
+                )
+            
+            detail: dict = result["detail"]
+            
+            return{
+                "status":True,
+                "msg": result["msg"],
+                "detail": {
+                    "access_token": detail["access_token"],
+                    "token_type": "bearer"
+                }
+            }      
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception("Error inesperado en %s", "/auth/refresh")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Ocurrió un error interno al procesar la solicitud."
+        )
+        
+        
+@router.post(
+    "/logout",
+    status_code=status.HTTP_200_OK,
+    response_model=BaseResponse,
+    summary="Salida segura de la sesión",
+    description="Endpoint para cerrar una sesión, anulando tokens de sesión y eliminando el token de la cookie",
+    responses=error_responses(400,401, 422, 500, 503),
+)
+async def router_logout(response:Response,data_refresh_token=Depends(validate_refresh_token)):
+    try:
+        async with engine.begin() as conn:
+            
+            result=await service_logout(conn, **data_refresh_token)
+            
+            if not result["status"]:
+                raise HTTPException(
+                    status_code=result["status_code"],
+                    detail=result["msg"]
+                )
+            
+            response.delete_cookie(
+                key="refresh_token",
+                httponly=CookieConfig.http_only,
+                secure=CookieConfig.secure,
+                samesite=CookieConfig.samesite,
+                path="/auth",
+            )
+            
+            return{
+                "status":result["status"],
+                "msg":result["msg"]
+            }
+            
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception("Error inesperado en %s", "/auth/logout")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Ocurrió un error interno al procesar la solicitud."
+        )
+        

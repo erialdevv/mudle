@@ -1,6 +1,6 @@
 import re
 from sqlalchemy.ext.asyncio import create_async_engine
-from db.config import database_url
+from db.config import DBConfig
 
 #import asyncio
 
@@ -8,7 +8,7 @@ from db.config import database_url
 db_url = re.sub(
     r'^postgresql:',
     'postgresql+psycopg:',
-    database_url
+    DBConfig.database_url
 )
 
 engine = create_async_engine(db_url, echo=True,pool_pre_ping=True)
