@@ -2,9 +2,9 @@ import logging
 from fastapi import APIRouter, HTTPException, status, Request, Path, Depends
 from db.connection import engine
 from core.security.token import validate_acces_token
-from schemas.auth.users import CreateUserRequest, UpdateUserRequest, CreateUserResponse, UpdateUserResponse,ReadUserResponse,ReadUserRequest
+from schemas.auth.users import CreateUserRequest, UpdateUserRequest, CreateUserResponse, UpdateUserResponse,GetUserResponse,ReadUserRequest
 from schemas.general.responses import error_responses, http_error_from_result
-from services.auth.users import service_update_user, service_save_user
+from services.auth.users import service_update_user, service_save_user, service_get_user
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +54,7 @@ async def router_insert_user(
 
 @router.get(
     "/me",
-    response_model=ReadUserResponse,
+    response_model=GetUserResponse,
     status_code=status.HTTP_200_OK,
     summary="Consultar datos de usuario en sesión.",
 )
@@ -62,11 +62,29 @@ async def router_get_profile(
     token_data: dict = Depends(validate_acces_token)
 ):
     try:
-        sp_parameters:dict={
-            "p_id":token_data["id"]
-        }
-        
-        
+        async with engine.begin() as conn:
+            sp_parameters:dict={
+                "p_id":token_data["id"]
+            }
+            
+            result=await service_get_user(conn, **sp_parameters)
+            detail:dict=result["detail"]["data_user"]
+            
+            if not result["status"]:
+                raise http_error_from_result(result)
+            
+            return{
+                "status":True,
+                "msg":result["msg"],
+                "detail":{
+                    "code":detail["codigo"],
+                    "first_name":detail["nombre"],
+                    "last_name":detail["apellido"],
+                    "institutional_email":detail["email_est"],
+                    "voided":detail["anulado"]
+                }
+            }
+            
     except HTTPException:
             raise
     except Exception:
@@ -75,7 +93,8 @@ async def router_get_profile(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Ocurrió un error interno al procesar la solicitud."
             )
-        
+
+@router.get
 
 @router.patch(
     "/update/{id}",

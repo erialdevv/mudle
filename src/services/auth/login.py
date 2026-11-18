@@ -8,7 +8,6 @@ logger = logging.getLogger(__name__)
 INTERNAL_MSG = "Ocurrió un error interno al procesar la solicitud."
 INVALID_CREDENTIALS_MSG = "Correo o contraseña incorrectos."
 
-
 async def service_login(conn, **data) -> dict:
     try:
         email: str = data["email"]
@@ -77,7 +76,6 @@ async def service_login(conn, **data) -> dict:
         logger.exception("Error inesperado en el inicio de sesión")
         return {"status": False, "status_code": 500, "msg": INTERNAL_MSG}
 
-
 async def service_validate_token(conn, **data) -> dict:
     try:
         sp_parameters: dict = {
@@ -113,7 +111,6 @@ async def service_validate_token(conn, **data) -> dict:
     except Exception:
         logger.exception("Error inesperado al renovar el token")
         return {"status": False, "status_code": 500, "msg": INTERNAL_MSG}
-
 
 async def service_logout(conn, **data)->dict:
     try:

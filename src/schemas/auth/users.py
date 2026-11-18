@@ -1,7 +1,7 @@
 import uuid
 from typing import Annotated
 from pydantic import BaseModel, EmailStr, StringConstraints, field_validator,model_validator, Field
-from schemas.general.responses import BaseResponse
+from schemas.general.responses import BaseResponse, DataResponse
 
 
 NonEmptyStr = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)]
@@ -31,13 +31,17 @@ class UpdateUserResponse(BaseResponse):
 
 class ReadUserRequest(BaseModel):
     id:int=Field(...,gt=0, description="El ID del usuario debe ser un número entero mayor a 0")
-
-class ReadUserResponse(BaseModel):
+    
+    
+class GetUserDetail(BaseModel):
     code:uuid.UUID
     first_name:str
     last_name:str
     institutional_email:EmailStr
     voided:bool
+    
+class GetUserResponse(DataResponse[GetUserDetail]):
+    """Respuesta de consulta de datos de usuario"""
 
 class UpdateUserRequest(BaseModel):
     

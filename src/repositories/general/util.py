@@ -62,10 +62,28 @@ async def execute_sp(statement: str, success_msg: str, conn, **data) -> dict:
         return {"status": False, "status_code": 500, "msg": _INTERNAL_MSG}
     
 async def excecute_function(function:str,succes_msg:str, conn,**data)->dict:
-     """Ejecuta un funcion almacenado y devuelve el resultado normalizado."""
+     """Ejecuta un funcion almacenada y devuelve el resultado normalizado."""
      try:
         parameters = ", ".join(f":{key}" for key in data)
-        sql=text(f"SELECT {function}")
+        sql=text(f"SELECT * from {function}({parameters})")
+        
+        result=await conn.execute(sql,data)
+        
+        row:dict|None = result.mappings().first()
+        
+        if not row:
+            return{
+                "status":False,
+                "msg":"No se encontraron resultados.",
+                "detail":{}
+            }
+        
+        return {
+            "status":True, 
+            "msg":succes_msg,
+            "data":row
+    
+        }
          
      except SQLAlchemyError as db_error:
         # Detalle técnico solo en el log del servidor, nunca en la respuesta

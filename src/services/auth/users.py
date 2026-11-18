@@ -1,7 +1,7 @@
 import logging
 import re
 from core.security.password import hash_password
-from repositories.auth.users import repo_insert_user, repo_update_user
+from repositories.auth.users import repo_insert_user, repo_update_user, repo_get_user_by_id
 from models.auth.users import User
 
 logger = logging.getLogger(__name__)
@@ -12,7 +12,6 @@ _FIELD_MAP = {
     "FIRST_NAME": "first_name",
     "LAST_NAME": "last_name",
 }
-
 
 def _validation_error(val_error: ValueError) -> dict:
     """Errores de campo del modelo (`[EMAIL]: ...`) -> 422; cualquier otro ValueError -> 400."""
@@ -26,7 +25,6 @@ def _validation_error(val_error: ValueError) -> dict:
             "msg": match.group(2),
         }
     return {"status": False, "status_code": 400, "msg": message}
-
 
 async def service_save_user(conn, allowed_domains, **data) -> dict:
     try:
@@ -67,7 +65,6 @@ async def service_save_user(conn, allowed_domains, **data) -> dict:
     except Exception:
         logger.exception("Error inesperado al crear el usuario")
         return {"status": False, "status_code": 500, "msg": INTERNAL_MSG}
-
 
 async def service_update_user(conn, allowed_domains, **data) -> dict:
     try:
@@ -110,3 +107,26 @@ async def service_update_user(conn, allowed_domains, **data) -> dict:
     except Exception:
         logger.exception("Error inesperado al actualizar el usuario")
         return {"status": False, "status_code": 500, "msg": INTERNAL_MSG}
+
+async def service_get_user(conn,**data):
+    try:
+        
+        result:dict=await repo_get_user_by_id(conn,**data)
+        
+        if not result:
+            return result
+        
+        return{
+            "status":True,
+            "msg":result["msg"],
+            "detail":{
+                "data_user":result["data"]
+            }
+        }
+        
+    except ValueError as val_error:
+            return _validation_error(val_error)
+    except Exception:
+            logger.exception("Error inesperado al crear el usuario")
+            return {"status": False, "status_code": 500, "msg": INTERNAL_MSG}
+
