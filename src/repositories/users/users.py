@@ -24,3 +24,11 @@ async def repo_get_user_by_id(conn,**data)->dict:
         conn,
         **data
     )
+
+async def repo_canceled_user_by_id(conn,**data)->dict:
+    return await execute_sp(
+        "sp_anular_usuario",
+        "Anulacion de usuario completada correctamente.",
+        conn,
+        **data
+    )

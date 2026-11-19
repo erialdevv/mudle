@@ -21,7 +21,6 @@ async def repo_valid_login(conn, email: str) -> dict | None:
 
     return dict(user) if user else None
 
-
 async def repo_insert_refresh_token(conn, **data) -> dict:
     return await execute_sp(
         "sp_guardar_refresh_token",

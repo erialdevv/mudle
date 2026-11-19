@@ -1,5 +1,4 @@
 from typing import Generic, TypeVar
-from fastapi import HTTPException
 from pydantic import BaseModel, Field
 
 T = TypeVar("T")
@@ -31,19 +30,6 @@ class ValidationErrorResponse(BaseModel):
     detail: list[ValidationErrorItem]
 
 
-def http_error_from_result(result: dict) -> HTTPException:
-    """Convierte el resultado fallido de un servicio en HTTPException.
-
-    Si el servicio indica un campo (`field`) con 422, usa el mismo formato de lista
-    que genera FastAPI para errores de validación, para que coincida con Swagger.
-    """
-    status_code = result["status_code"]
-    if status_code == 422 and result.get("field"):
-        detail = [{"loc": ["body", result["field"]], "msg": result["msg"], "type": "value_error"}]
-        return HTTPException(status_code=422, detail=detail)
-    return HTTPException(status_code=status_code, detail=result["msg"])
-
-
 _DESCRIPTIONS = {
     400: "Solicitud incorrecta: datos que no cumplen las reglas de negocio",
     401: "No autenticado o token inválido/expirado",
@@ -56,12 +42,19 @@ _DESCRIPTIONS = {
 }
 
 
-# Mapa reutilizable para el parámetro `responses=` de los endpoints
+# Errores que cualquier endpoint puede devolver; se documentan siempre.
+COMMON_ERROR_CODES = (422, 500, 503)
+
+
+# Mapa reutilizable para el parámetro `responses=` de los endpoints.
+# Solo hay que indicar los códigos propios del endpoint (401, 404, 409...);
+# los comunes (422, 500, 503) se agregan automáticamente.
 def error_responses(*codes: int) -> dict:
+    all_codes = sorted(set(codes) | set(COMMON_ERROR_CODES))
     return {
         c: {
             "model": ValidationErrorResponse if c == 422 else ErrorResponse,
             "description": _DESCRIPTIONS.get(c, "Error"),
         }
-        for c in codes
+        for c in all_codes
     }
