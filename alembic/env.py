@@ -5,7 +5,7 @@ from sqlalchemy import engine_from_config, pool
 
 from db.base_columns import metadata
 from db.config import DBConfig
-import db.tables
+import db  # noqa: F401  (efecto lateral: db/__init__.py registra las tablas en metadata)
 
 config = context.config
 

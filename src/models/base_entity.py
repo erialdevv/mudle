@@ -67,13 +67,13 @@ class BaseEntity:
         code:uuid.UUID,
         pcid: str,
         voided: bool = False, # False como valor inicial
-        id:int|None=None,
+        entity_id:int|None=None,
         created_at: datetime|None = None,
         edited_at: datetime|None = None,
         edited_by: str|None= None,
         created_by: str|None=None,
     ):
-        self.id = id
+        self.id = entity_id
         self.code=code
         self.voided = voided
         self.created_by =created_by 

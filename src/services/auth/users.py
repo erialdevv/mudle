@@ -72,7 +72,7 @@ async def service_update_user(conn, allowed_domains, **data) -> dict:
         password_hash = hash_password(password) if password else None
 
         user = User(
-            id=data.get("id"),
+            user_id=data.get("id"),
             edited_by=data.get("edited_by"),
             pcid=data.get("pcid"),
             password=password_hash,

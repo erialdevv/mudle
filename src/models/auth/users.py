@@ -62,7 +62,7 @@ class User(BaseEntity):
         password:str|None=None,
         email:str=None, # Correo institucional
         allowed_domains:list[str]=None,
-        id:int=None,
+        user_id:int=None,
         code:uuid.UUID=None,
         first_name:str=None,
         last_name:str=None,
@@ -73,7 +73,7 @@ class User(BaseEntity):
         created_by: str=None,
     ):
         super().__init__(
-            id=id,
+            entity_id=user_id,
             code=code,
             created_by=created_by,
             pcid=pcid,

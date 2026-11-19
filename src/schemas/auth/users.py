@@ -1,6 +1,6 @@
 import uuid
 from typing import Annotated
-from pydantic import BaseModel, EmailStr, StringConstraints, field_validator,model_validator, Field
+from pydantic import BaseModel, EmailStr, StringConstraints, Field
 from schemas.general.responses import BaseResponse, DataResponse
 
 

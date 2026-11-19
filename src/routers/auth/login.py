@@ -23,10 +23,10 @@ router = APIRouter(
     description="Valida credenciales y devuelve el access token. El refresh token se entrega en cookie HttpOnly.",
     responses=error_responses(401, 422, 500, 503),
 )
-async def router_login(request: LoginRequest, response: Response):
+async def router_login(body: LoginRequest, response: Response):
     try:
         async with engine.begin() as conn:
-            data: dict = request.model_dump()
+            data: dict = body.model_dump()
 
             result: dict = await service_login(conn, **data)
 

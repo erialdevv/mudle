@@ -42,8 +42,7 @@ def _map_db_error(db_error: SQLAlchemyError) -> dict:
 
     return {"status": False, "status_code": 500, "msg": _INTERNAL_MSG}
 
-
-async def execute_sp(statement: str, success_msg: str, conn, **data) -> dict:
+async def execute_sp(statement: str, success_msg: str, conn, /, **data) -> dict:
     """Ejecuta un procedimiento almacenado y devuelve el resultado normalizado."""
     try:
         parameters = ", ".join(f":{key}" for key in data)
@@ -61,11 +60,11 @@ async def execute_sp(statement: str, success_msg: str, conn, **data) -> dict:
         logger.exception("Error inesperado en %s", statement)
         return {"status": False, "status_code": 500, "msg": _INTERNAL_MSG}
     
-async def excecute_function(function:str,succes_msg:str, conn,**data)->dict:
+async def execute_function(function_name: str, success_msg: str, conn, /, **data) -> dict:
      """Ejecuta un funcion almacenada y devuelve el resultado normalizado."""
      try:
         parameters = ", ".join(f":{key}" for key in data)
-        sql=text(f"SELECT * from {function}({parameters})")
+        sql=text(f"SELECT * from {function_name}({parameters})")
         
         result=await conn.execute(sql,data)
         
@@ -80,13 +79,13 @@ async def excecute_function(function:str,succes_msg:str, conn,**data)->dict:
         
         return {
             "status":True, 
-            "msg":succes_msg,
+            "msg":success_msg,
             "data":row
     
         }
          
      except SQLAlchemyError as db_error:
         # Detalle técnico solo en el log del servidor, nunca en la respuesta
-        logger.error("Error de BD en %s: %s", function, getattr(db_error, "orig", db_error))
+        logger.error("Error de BD en %s: %s", function_name, getattr(db_error, "orig", db_error))
         return _map_db_error(db_error)
         

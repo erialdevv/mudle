@@ -1,4 +1,4 @@
-from repositories.general.util import execute_sp,excecute_function
+from repositories.general.util import execute_sp, execute_function
 
 
 async def repo_insert_user(conn, **data) -> dict:
@@ -18,7 +18,7 @@ async def repo_update_user(conn, **data) -> dict:
     )
 
 async def repo_get_user_by_id(conn,**data)->dict:
-    return await excecute_function(
+    return await execute_function(
         "fn_obtener_usuario_por_id",
         "Consulta de perfil realizada correctamente",
         conn,
