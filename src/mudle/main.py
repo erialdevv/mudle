@@ -9,6 +9,7 @@ import asyncio
 from core.general.util import  data_load_task
 from routers import router
 from core.general.errors import AppError
+from db.redis_client import redis_client
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +19,9 @@ async def lifespan(app: FastAPI):
     background_task = None
     
     try:
+        #validacion de redis
+        await redis_client.ping()
+        
         domains = await get_domains(engine)
         if not domains["status"]:
             raise RuntimeError(
@@ -30,6 +34,8 @@ async def lifespan(app: FastAPI):
         )
         
         yield
+        
+        await redis_client.aclose()
         
     except Exception as error:
         app.state.allowed_domains=None

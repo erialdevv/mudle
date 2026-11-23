@@ -3,15 +3,16 @@ from sqlalchemy import (
     Column,
     String,
     Integer,
-    JSON
+    JSON,
+    text
 )
 from db.base_columns import metadata,base_columns
 
-roles=Table(
+users_roles=Table(
     "sis_roles",
     metadata,
     Column("nombre",String(150), unique=True,nullable=False),
     Column("version",Integer, default=1, nullable=False),
-    Column("permissions",JSON, nullable=False, server_default=dict)
+    Column("permissions",JSON, nullable=False, server_default=text("'{}'::jsonb")),
     *base_columns()
 )

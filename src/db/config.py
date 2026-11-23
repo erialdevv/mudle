@@ -29,3 +29,6 @@ class CookieConfig:
     http_only: bool = True
     secure: bool = os.getenv("SECURE", "").strip().lower() in ("1", "true")
     samesite: str = os.getenv("SAMESITE", "lax")
+    
+class RedisConfig:
+    redis_url:str=os.getenv("REDIS_URL")
