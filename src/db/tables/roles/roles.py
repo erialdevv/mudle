@@ -8,6 +8,7 @@ from sqlalchemy import (
 )
 from db.base_columns import metadata,base_columns
 
+
 users_roles=Table(
     "sis_roles",
     metadata,
