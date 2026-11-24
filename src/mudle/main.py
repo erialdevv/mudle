@@ -55,9 +55,8 @@ app.include_router(router)
 
 @app.exception_handler(AppError)
 async def app_error_handler(request: Request, exc: AppError):
-    """Único punto que traduce los errores controlados de la app a HTTP."""
+    """traduccion de los errores controlados de la app a HTTP"""
     if exc.field:
-        # Mismo formato que los 422 de FastAPI/Pydantic, para que coincida con Swagger
         detail = [{"loc": ["body", exc.field], "msg": exc.msg, "type": "value_error"}]
     else:
         detail = exc.msg
@@ -66,7 +65,7 @@ async def app_error_handler(request: Request, exc: AppError):
 
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception):
-    """Manejador global: cualquier error no controlado responde 500 y se registra."""
+    """Manejador global: cualquier error no controlado responde 500 y se registra"""
     logger.error(
         "Error inesperado en %s %s", request.method, request.url.path,
         exc_info=(type(exc), exc, exc.__traceback__),

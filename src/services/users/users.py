@@ -1,6 +1,6 @@
 import logging
 import re
-from core.general.errors import BadRequestError, FieldValidationError
+from core.general.errors import BadRequestError, ConflictError, FieldValidationError, NotFoundError
 from core.security.password import hash_password
 from repositories.users.users import repo_insert_user, repo_update_user, repo_get_user_by_id, repo_canceled_user_by_id
 from models.users.users import User
@@ -50,6 +50,14 @@ async def service_save_user(conn, allowed_domains, **data) -> dict:
     return await repo_insert_user(conn, **sp_parameters)
 
 
+async def _fetch_user(conn, user_id: int) -> dict:
+    """Consulta el usuario; si no existe lanza NotFoundError (404)."""
+    result: dict = await repo_get_user_by_id(conn, p_id=user_id)
+    if result["data"] is None:
+        raise NotFoundError(f"El usuario con ID {user_id} no existe.")
+    return result
+
+
 async def service_update_user(conn, allowed_domains, **data) -> dict:
     password = data.get("password")
 
@@ -64,6 +72,19 @@ async def service_update_user(conn, allowed_domains, **data) -> dict:
         last_name=data.get("last_name"),
     )
 
+    current: dict = (await _fetch_user(conn, int(user.id)))["data"]
+
+    # Solo cuenta como cambio un campo enviado y distinto del actual.
+    # La contraseña llega hasheada con sal, por lo que siempre se considera un cambio.
+    has_changes = (
+        user.password is not None
+        or (user.first_name is not None and user.first_name != current["nombre"])
+        or (user.last_name is not None and user.last_name != current["apellido"])
+        or (user.email is not None and user.email != current["email_est"])
+    )
+    if not has_changes:
+        raise BadRequestError("No se realizaron cambios porque los datos enviados son iguales a los actuales.")
+
     sp_parameters: dict = {
         "p_id": int(user.id),
         "p_editado_por": user.edited_by,
@@ -77,7 +98,7 @@ async def service_update_user(conn, allowed_domains, **data) -> dict:
 
 
 async def service_get_user(conn, **data) -> dict:
-    result: dict = await repo_get_user_by_id(conn, **data)
+    result: dict = await _fetch_user(conn, data["p_id"])
 
     return {
         "msg": result["msg"],
@@ -86,6 +107,11 @@ async def service_get_user(conn, **data) -> dict:
 
 
 async def service_canceled_user(conn, **data) -> dict:
+    current: dict = (await _fetch_user(conn, data["p_id"]))["data"]
+
+    if current["anulado"]:
+        raise ConflictError(f"El usuario con ID {data['p_id']} ya se encuentra anulado.")
+
     await repo_canceled_user_by_id(conn, **data)
 
     return {"msg": "Usuario anulado exitosamente."}

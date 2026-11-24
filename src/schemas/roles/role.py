@@ -1,11 +1,11 @@
 from pydantic import BaseModel, Field, field_validator
-from core.permissions.bitmask_engine import EnumModules
+from core.permissions.bitmask_engine import SystemModules
 
 
 class RoleRequest(BaseModel):
     p_nombre: str
     p_version: int = 1
-    p_permissions: dict[EnumModules, int] = Field(
+    p_permissions: dict[SystemModules, int] = Field(
         ...,
         description="Diccionario cuya clave representa el modulo y el valor la mascara de bits",
         examples=[
@@ -18,10 +18,10 @@ class RoleRequest(BaseModel):
 
     @field_validator("p_permissions")
     @classmethod
-    def validate(cls, perm: dict[EnumModules, int]) -> dict[EnumModules, int]:
+    def validate(cls, perm: dict[SystemModules, int]) -> dict[SystemModules, int]:
         for module, bitmask in perm.items():
-            if module not in EnumModules or bitmask < 0:
+            if module not in SystemModules or bitmask < 0:
                 raise ValueError(
-                    f"Módulo o bitmask inválido ('{module}': {bitmask}). Módulos permitidos: {', '.join(EnumModules)} (valores >= 0)."
+                    f"Módulo o bitmask inválido ('{module}': {bitmask}). Módulos permitidos: {', '.join(SystemModules)} (valores >= 0)."
                 )
         return perm

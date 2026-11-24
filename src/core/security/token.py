@@ -10,7 +10,14 @@ from db.config import TokenConfig
 security = HTTPBearer()
 
 
-def create_access_token(user_id: int, code: uuid.UUID, pcid: str) -> dict:
+def create_access_token(
+    user_id: int, 
+    code: uuid.UUID,
+    roleid:int,
+    role_version:int,
+    perms:dict,
+    pcid: str
+    ) -> dict:
     try:
         if not TokenConfig.secret_key or not TokenConfig.algorithm:
             raise ValueError("Faltan variables de configuración para firmar el token.")
@@ -20,6 +27,9 @@ def create_access_token(user_id: int, code: uuid.UUID, pcid: str) -> dict:
 
         token_payload: dict = {
             "sub": str(code),
+            "rol_id":roleid,
+            "version":role_version,
+            "perms":perms,
             "uid": user_id,
             "pcid": pcid,
             "iat": time_now,
@@ -101,6 +111,8 @@ def validate_acces_token(credentials: HTTPAuthorizationCredentials = Depends(sec
         user_id: int | None = payload.get("uid")
         pcid: str | None = payload.get("pcid")
         type_token=payload.get("type")
+        role_id=payload.get("rol_id")
+        version=payload.get("version")
         
         if type_token!=TokenConfig.token_type_access:
             raise HTTPException(
@@ -115,7 +127,9 @@ def validate_acces_token(credentials: HTTPAuthorizationCredentials = Depends(sec
         return {
             "id": user_id,
             "code": uuid.UUID(user_code),
-            "pcid": pcid
+            "rol_id":role_id,
+            "pcid": pcid,
+            "version":version
         }
 
     except (PyJWTError, ValueError):

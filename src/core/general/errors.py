@@ -1,8 +1,4 @@
 """Catálogo de errores de la aplicación.
-
-Los repositorios y servicios LANZAN estas excepciones; el manejador global de
-`main.py` es el único lugar que las traduce a una respuesta HTTP. Los routers no
-revisan resultados ni deciden códigos.
 """
 
 
