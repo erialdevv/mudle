@@ -28,6 +28,7 @@ def _build_user(**kwargs) -> User:
 
 
 async def service_save_user(conn, allowed_domains, **data) -> dict:
+    
     domain_user = _build_user(
         created_by=data.get("created_by"),
         pcid=data.get("pcid"),

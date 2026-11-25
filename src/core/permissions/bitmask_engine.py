@@ -11,6 +11,7 @@ class ActionsPermissions(IntFlag):
 class SystemModules(StrEnum):
     AUTH="auth"
     USER="users"
+    ROLES="roles"
 
 def check_permission(user_mask:int, required_mask:int)->bool:
     

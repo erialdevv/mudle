@@ -34,7 +34,6 @@ def verify_email(email: str, check_domain: bool = False, allowed_domains: list[s
             "status": False,
             "msg": f"El correo electrónico no es válido: {str(error)}."
         }
-
     
 def verify_length(value:str|None):
     if value and value.strip():

@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, field_validator
 from core.permissions.bitmask_engine import SystemModules
-
+from schemas.general.responses import BaseResponse
 
 class RoleRequest(BaseModel):
     p_nombre: str

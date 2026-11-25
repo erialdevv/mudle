@@ -13,6 +13,7 @@ def _key(rol_id: int) -> str:
 async def get_role_permissions(redis: Redis, conn, rol_id: int) -> dict:
 
     cached = await redis.get(_key(rol_id))
+    
     if cached is not None:
         #Data de permisos que tiene la version y la mascara de bits
         #{"vers_rol":1,"mask_bits":{"modulo":mask}}

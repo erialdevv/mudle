@@ -1,4 +1,4 @@
-from repositories.general.util import execute_sp, execute_function
+from repositories.general.util import execute_function
 
 async def repo_get_permissions_by_rolid(conn, **data) -> dict:
     return await execute_function(

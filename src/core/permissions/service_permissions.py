@@ -20,11 +20,12 @@ def validate_permissions(
         rolid: int = token_data.get("rol_id")
         # Obtienes los permisos reales desde Redis o BD
         perm_data: dict = await get_role_permissions(redis_client, conn, rolid)
+        version_perm: int = perm_data["vers_rol"]
         
-        if token_data["version"] != perm_data["vers_rol"]:
+        if token_data["version"] != version_perm:
             raise UnauthorizedError("Los permisos de tu rol cambiaron; renueva la sesión.")
         
-        version_perm: int = perm_data["vers_rol"]
+        
         
         map_mask_bits: dict = perm_data["mask_bits"]
 
