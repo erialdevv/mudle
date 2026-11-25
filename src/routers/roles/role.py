@@ -34,3 +34,15 @@ async def router_insert_role(
     
     return{"status":True, "msg":result["msg"]}
     
+
+@router.get(
+    "/me",
+    status_code=status.HTTP_200_OK,
+    summary="Ver roles",
+    responses=error_responses(*DB_ERROR_CODES),
+)
+async def router_get_role_me(
+    conn: DbConn,
+    token_data: dict = Depends(validate_permissions(SystemModules.ROLES, ActionsPermissions.PERM_READ))
+):
+    pass

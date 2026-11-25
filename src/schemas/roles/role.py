@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, field_validator
 from core.permissions.bitmask_engine import SystemModules
-from schemas.general.responses import BaseResponse
+from schemas.general.responses import BaseResponse,DataResponse
 
 class RoleRequest(BaseModel):
     p_nombre: str
@@ -25,3 +25,20 @@ class RoleRequest(BaseModel):
                     f"Módulo o bitmask inválido ('{module}': {bitmask}). Módulos permitidos: {', '.join(SystemModules)} (valores >= 0)."
                 )
         return perm
+
+class RoleReadDetail(BaseModel):
+    name:str=Field(..., description="Nombre del rol consultado", examples=["rol ejemplo"])
+    version:int=Field(..., description="Version del rol", examples=["1"])
+    p_permissions: dict[SystemModules, int] = Field(
+            ...,
+            description="Diccionario cuya clave representa el modulo y el valor la mascara de bits",
+            examples=[
+                {
+                    "auth": 1,
+                    "users": 15,
+                }
+            ],
+        )
+
+class RoleReadResponse(DataResponse[RoleReadDetail]):
+    """Respuesta de lectura de roles."""
