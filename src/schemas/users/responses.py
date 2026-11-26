@@ -1,7 +1,7 @@
 import uuid
 from typing import Annotated
 from pydantic import BaseModel, EmailStr, StringConstraints, Field
-from schemas.general.responses import BaseResponse, DataResponse
+from schemas.general.responses import BaseResponse, DataResponse, PaginatedResponse
 
 
 NonEmptyStr = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)]
@@ -42,6 +42,9 @@ class GetUserDetail(BaseModel):
     
 class GetUserResponse(DataResponse[GetUserDetail]):
     """Respuesta de consulta de datos de usuario"""
+
+class GetUsersResponse(PaginatedResponse[GetUserDetail]):
+    """Respuesta de listado paginado de usuarios"""
 
 class UpdateUserRequest(BaseModel):
     

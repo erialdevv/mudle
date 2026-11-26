@@ -58,3 +58,17 @@ def error_responses(*codes: int) -> dict:
         }
         for c in all_codes
     }
+
+
+class PageMeta(BaseModel):
+    """Metadatos de paginación."""
+    page: int = Field(..., description="Página actual", examples=[1])
+    limit: int = Field(..., description="Registros por página", examples=[10])
+    total: int = Field(..., description="Total de registros que cumplen el filtro", examples=[42])
+    total_pages: int = Field(..., description="Total de páginas", examples=[5])
+
+
+class PaginatedResponse(BaseResponse, Generic[T]):
+    """Respuesta exitosa de listados paginados."""
+    detail: list[T]
+    pagination: PageMeta

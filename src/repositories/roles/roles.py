@@ -15,3 +15,12 @@ async def repo_get_roles(conn,**data):
         conn,
         **data
     )
+
+async def repo_get_all_roles(conn,**data):
+    return await execute_function(
+        "fn_obtener_roles",
+        "Roles cargados correctamente",
+        conn,
+        all_rows=True,
+        **data
+    )

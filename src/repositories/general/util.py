@@ -55,13 +55,21 @@ async def execute_sp(statement: str, success_msg: str, conn, /, **data) -> dict:
         raise _map_db_error(db_error) from db_error
 
 
-async def execute_query(sql: str, conn, /, **params) -> dict | None:
-    """Ejecuta un SELECT y devuelve la primera fila como dict, o None si no hay filas.
+async def execute_query(sql: str, conn, /, all_rows: bool = False, **params) -> dict | list[dict] | None:
+    """Ejecuta un SELECT.
+
+    - all_rows=False (por defecto): devuelve la primera fila como dict, o None si no hay filas.
+    - all_rows=True: devuelve la lista de filas (list[dict]), o None si no hay filas.
 
     Decidir si "sin filas" es un error (404, 401...) es responsabilidad del servicio.
     """
     try:
         result = await conn.execute(text(sql), params)
+
+        if all_rows:
+            rows: list[dict] = [dict(row) for row in result.mappings()]
+            return rows or None
+
         row = result.mappings().first()
         return dict(row) if row else None
 
@@ -70,9 +78,10 @@ async def execute_query(sql: str, conn, /, **params) -> dict | None:
         raise _map_db_error(db_error) from db_error
 
 
-async def execute_function(function_name: str, success_msg: str, conn, /, **data) -> dict:
-    """Ejecuta una función almacenada. `data` es None si no devolvió filas; el servicio decide qué hacer."""
+async def execute_function(function_name: str, success_msg: str, conn, /, all_rows: bool = False, **data) -> dict:
+    """Ejecuta una función almacenada. `data` es None si no devolvió filas; el servicio decide qué hacer.
+    Con all_rows=True, `data` es una lista de filas."""
     parameters = ", ".join(f":{key}" for key in data)
-    row = await execute_query(f"SELECT * FROM {function_name}({parameters})", conn, **data)
+    rows:list[dict]|dict = await execute_query(f"SELECT * FROM {function_name}({parameters})", conn, all_rows=all_rows, **data)
 
-    return {"msg": success_msg, "data": row}
+    return {"msg": success_msg, "data": rows}

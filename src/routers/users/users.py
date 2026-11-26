@@ -1,11 +1,11 @@
 import logging
-from fastapi import APIRouter, HTTPException, status, Request, Path, Depends
+from fastapi import APIRouter, HTTPException, status, Request, Path, Depends, Query
 from db.connection import DbConn
 from core.security.token import validate_acces_token
-from schemas.users.users import CreateUserRequest, UpdateUserRequest, CreateUserResponse, UpdateUserResponse, GetUserResponse, BaseResponse
+from schemas.users.responses import CreateUserRequest, UpdateUserRequest, CreateUserResponse, UpdateUserResponse, GetUserResponse, GetUsersResponse, BaseResponse
 from schemas.general.responses import error_responses
 from repositories.general.util import DB_ERROR_CODES
-from services.users.users import service_update_user, service_save_user, service_get_user, service_canceled_user
+from services.users.users import service_update_user, service_save_user, service_get_user, service_get_all_users, service_canceled_user
 from core.permissions.service_permissions import validate_permissions
 from core.permissions.bitmask_engine import SystemModules, ActionsPermissions
 
@@ -18,15 +18,6 @@ router = APIRouter(
     tags=["Users"],
     responses=error_responses(401)
 )
-
-def _profile_detail(data_user: dict) -> dict:
-    return {
-        "code": data_user["codigo"],
-        "first_name": data_user["nombre"],
-        "last_name": data_user["apellido"],
-        "institutional_email": data_user["email_est"],
-        "voided": data_user["anulado"],
-    }
 
 @router.post(
     "/register",
@@ -69,8 +60,26 @@ async def router_get_profile(
     return {
         "status": True,
         "msg": result["msg"],
-        "detail": _profile_detail(result["detail"]["data_user"]),
+        "detail": result["detail"]["data_user"],
     }
+
+@router.get(
+    "/all",
+    response_model=GetUsersResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Obtener todos los usuarios creados",
+)
+async def router_get_all_users(
+    conn: DbConn,
+    page: int = Query(1, ge=1, description="Página actual"),
+    limit: int = Query(10, ge=1, le=100, description="Cantidad de registros por página"),
+    search: str | None = Query(None, description="Texto para buscar por nombre, apellido o correo"),
+    only_active: bool = Query(True, description="Si es True trae solo los no anulados"),
+    token_data: dict = Depends(validate_permissions(SystemModules.USER, ActionsPermissions.PERM_READ))
+):
+    result: dict = await service_get_all_users(conn, page, limit, search, only_active)
+
+    return {"status": True, **result}
 
 @router.get(
     "/{user_id}",
@@ -89,7 +98,7 @@ async def router_get_user(
     return {
         "status": True,
         "msg": result["msg"],
-        "detail": _profile_detail(result["detail"]["data_user"]),
+        "detail": result["detail"]["data_user"],
     }
 
 @router.patch(

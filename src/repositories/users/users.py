@@ -25,6 +25,15 @@ async def repo_get_user_by_id(conn,**data)->dict:
         **data
     )
 
+async def repo_get_all_users(conn, **data) -> dict:
+    return await execute_function(
+        "fn_obtener_usuarios",
+        "Usuarios cargados correctamente",
+        conn,
+        all_rows=True,
+        **data
+    )
+
 async def repo_canceled_user_by_id(conn,**data)->dict:
     return await execute_sp(
         "sp_anular_usuario",

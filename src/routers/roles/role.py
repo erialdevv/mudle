@@ -1,13 +1,14 @@
-from fastapi import APIRouter, status, Response, Depends
+from fastapi import APIRouter, status, Depends, Query
+from typing import Optional
 from schemas.roles.responses import RoleRequest
 from schemas.general.responses import error_responses
 from repositories.general.util import DB_ERROR_CODES
 from schemas.general.responses import BaseResponse
-from schemas.roles.responses import RoleReadResponse
+from schemas.roles.responses import RoleReadResponse, RoleListResponse
 from db.connection import DbConn
 from core.permissions.service_permissions import validate_permissions
 from core.permissions.bitmask_engine import SystemModules, ActionsPermissions
-from services.roles.roles import service_save_roles, service_get_roles
+from services.roles.roles import service_save_roles, service_get_roles, service_get_all_roles
 
 router=APIRouter(
     prefix="/role",
@@ -19,7 +20,7 @@ router=APIRouter(
 
 @router.post(
     "/create",
-    status_code=status.HTTP_200_OK,
+    status_code=status.HTTP_201_CREATED,
     response_model=BaseResponse,
     summary="Creacion de roles",
     responses=error_responses(*DB_ERROR_CODES),
@@ -42,7 +43,7 @@ async def router_insert_role(
     "/me",
     status_code=status.HTTP_200_OK,
     response_model=RoleReadResponse,
-    summary="Ver roles",
+    summary="Obtener roles de usuario autenticado",
     responses=error_responses(*DB_ERROR_CODES),
 )
 async def router_get_role_me(
@@ -52,16 +53,24 @@ async def router_get_role_me(
     role_id:int=token_data.get("rol_id")
     
     result:dict=await service_get_roles(conn,role_id)
-    detail:dict=result["detail"]
-    
-    return{
-        "status":True,
-        "msg":result["msg"],
-        "detail":{
-            "code":detail.get("codigo"),
-            "name":detail.get("nombre"),
-            "version":detail.get("version"),
-            "permissions":detail.get("permissions"),
-            "voided":detail.get("anulado")
-        }
-    }
+
+    return {"status":True,"msg":result["msg"],"detail":result["detail"]}
+
+@router.get(
+    "/all",
+    status_code=status.HTTP_200_OK,
+    response_model=RoleListResponse,
+    summary="Obtener todos los roles creados",
+    responses=error_responses(*DB_ERROR_CODES),
+)
+async def router_get_all_roles(
+    conn: DbConn,
+    page: int = Query(1, ge=1, description="Página actual"),
+    limit: int = Query(10, ge=1, le=100, description="Cantidad de registros por página"),
+    search: Optional[str] = Query(None, description="Texto para buscar por nombre"),
+    only_active: bool = Query(True, description="Si es True trae solo los no anulados"),
+    token_data: dict = Depends(validate_permissions(SystemModules.ROLES, ActionsPermissions.PERM_READ))
+):
+    result: dict = await service_get_all_roles(conn, page, limit, search, only_active)
+
+    return {"status": True, **result}

@@ -2,7 +2,8 @@ import logging
 import re
 from core.general.errors import BadRequestError, ConflictError, FieldValidationError, NotFoundError
 from core.security.password import hash_password
-from repositories.users.users import repo_insert_user, repo_update_user, repo_get_user_by_id, repo_canceled_user_by_id
+from core.general.pagination import build_page
+from repositories.users.users import repo_get_all_users, repo_insert_user, repo_update_user, repo_get_user_by_id, repo_canceled_user_by_id
 from models.users.users import User
 
 logger = logging.getLogger(__name__)
@@ -15,8 +16,6 @@ _FIELD_MAP = {
 
 
 def _build_user(**kwargs) -> User:
-    """Construye el modelo de dominio. Sus ValueError se traducen a errores de la app:
-    `[EMAIL]: ...` -> 422 con el campo; cualquier otro ValueError -> 400."""
     try:
         return User(**kwargs)
     except ValueError as val_error:
@@ -75,13 +74,12 @@ async def service_update_user(conn, allowed_domains, **data) -> dict:
 
     current: dict = (await _fetch_user(conn, int(user.id)))["data"]
 
-    # Solo cuenta como cambio un campo enviado y distinto del actual.
-    # La contraseña llega hasheada con sal, por lo que siempre se considera un cambio.
+    #validacion de logica booleana para ver si almenos uno de esos tienen un cambio
     has_changes = (
         user.password is not None
-        or (user.first_name is not None and user.first_name != current["nombre"])
-        or (user.last_name is not None and user.last_name != current["apellido"])
-        or (user.email is not None and user.email != current["email_est"])
+        or (user.first_name is not None and user.first_name != current["first_name"])
+        or (user.last_name is not None and user.last_name != current["last_name"])
+        or (user.email is not None and user.email != current["institutional_email"])
     )
     if not has_changes:
         raise BadRequestError("No se realizaron cambios porque los datos enviados son iguales a los actuales.")
@@ -107,10 +105,23 @@ async def service_get_user(conn, **data) -> dict:
     }
 
 
+async def service_get_all_users(conn, page: int, limit: int, search: str | None, only_active: bool) -> dict:
+    result: dict = await repo_get_all_users(
+        conn,
+        p_limit=limit,
+        p_offset=(page - 1) * limit,
+        p_search=search,
+        p_only_active=only_active,
+    )
+    items, pagination = build_page(result["data"], page, limit)
+
+    return {"msg": result["msg"], "detail": items, "pagination": pagination}
+
+
 async def service_canceled_user(conn, **data) -> dict:
     current: dict = (await _fetch_user(conn, data["p_id"]))["data"]
 
-    if current["anulado"]:
+    if current["voided"]:
         raise ConflictError(f"El usuario con ID {data['p_id']} ya se encuentra anulado.")
 
     await repo_canceled_user_by_id(conn, **data)

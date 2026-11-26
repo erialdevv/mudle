@@ -1,7 +1,8 @@
 from models.roles.role import Role
 import re
 from core.general.errors import BadRequestError, ConflictError, FieldValidationError, NotFoundError
-from repositories.roles.roles import repo_insert_roles, repo_get_roles
+from core.general.pagination import build_page
+from repositories.roles.roles import repo_insert_roles, repo_get_roles, repo_get_all_roles
 
 _FIELD_MAP = {
     "NAME": "p_nombre",
@@ -52,8 +53,6 @@ async def service_get_roles(conn,role_id:int):
     
     result:dict=await repo_get_roles(conn, **sp_parameters)
     data:dict|None=result["data"]
-    
-    
 
     if data is None:
         raise NotFoundError(f"El rol del usuario en sesion no existe.")
@@ -63,3 +62,15 @@ async def service_get_roles(conn,role_id:int):
         "detail":data
     }
         
+async def service_get_all_roles(conn, page: int, limit: int, search: str | None, only_active: bool):
+    sp_parameters: dict = {
+        "p_limit": limit,
+        "p_offset": (page - 1) * limit,
+        "p_search": search,
+        "p_only_active": only_active,
+    }
+
+    result: dict = await repo_get_all_roles(conn, **sp_parameters)
+    items, pagination = build_page(result["data"], page, limit)
+
+    return {"msg": result["msg"], "detail": items, "pagination": pagination}

@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, field_validator
 from core.permissions.bitmask_engine import SystemModules
-from schemas.general.responses import BaseResponse,DataResponse
+from schemas.general.responses import BaseResponse,DataResponse,PaginatedResponse
 import uuid
 
 class RoleRequest(BaseModel):
@@ -43,6 +43,9 @@ class RoleReadDetail(BaseModel):
     )
     voided:bool
     
-
 class RoleReadResponse(DataResponse[RoleReadDetail]):
-    """Respuesta de lectura de roles."""
+    """Respuesta de lectura de un rol."""
+
+
+class RoleListResponse(PaginatedResponse[RoleReadDetail]):
+    """Respuesta de listado paginado de roles."""
