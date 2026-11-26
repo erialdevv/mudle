@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field, field_validator
 from core.permissions.bitmask_engine import SystemModules
 from schemas.general.responses import BaseResponse,DataResponse
+import uuid
 
 class RoleRequest(BaseModel):
     p_nombre: str
@@ -27,9 +28,10 @@ class RoleRequest(BaseModel):
         return perm
 
 class RoleReadDetail(BaseModel):
+    code:uuid.UUID=Field(...,description="Codigo del rol consultado", examples=["550e8400-e29b-41d4-a716-446655440000"])
     name:str=Field(..., description="Nombre del rol consultado", examples=["rol ejemplo"])
     version:int=Field(..., description="Version del rol", examples=["1"])
-    p_permissions: dict[SystemModules, int] = Field(
+    permissions: dict[SystemModules, int] = Field(
             ...,
             description="Diccionario cuya clave representa el modulo y el valor la mascara de bits",
             examples=[
@@ -38,7 +40,9 @@ class RoleReadDetail(BaseModel):
                     "users": 15,
                 }
             ],
-        )
+    )
+    voided:bool
+    
 
 class RoleReadResponse(DataResponse[RoleReadDetail]):
     """Respuesta de lectura de roles."""

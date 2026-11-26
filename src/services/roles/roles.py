@@ -1,7 +1,7 @@
 from models.roles.role import Role
 import re
 from core.general.errors import BadRequestError, ConflictError, FieldValidationError, NotFoundError
-from repositories.roles.roles import repo_insert_roles
+from repositories.roles.roles import repo_insert_roles, repo_get_roles
 
 _FIELD_MAP = {
     "NAME": "p_nombre",
@@ -44,4 +44,22 @@ async def service_save_roles(
     
     return await repo_insert_roles(conn,**sp_parameters)
     
+async def service_get_roles(conn,role_id:int):
     
+    sp_parameters:dict={
+        "p_rol_id":role_id
+    }
+    
+    result:dict=await repo_get_roles(conn, **sp_parameters)
+    data:dict|None=result["data"]
+    
+    
+
+    if data is None:
+        raise NotFoundError(f"El rol del usuario en sesion no existe.")
+    
+    return{
+        "msg":result["msg"],
+        "detail":data
+    }
+        
