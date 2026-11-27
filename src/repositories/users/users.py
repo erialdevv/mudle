@@ -17,9 +17,9 @@ async def repo_update_user(conn, **data) -> dict:
         **data
     )
 
-async def repo_get_user_by_id(conn,**data)->dict:
+async def repo_get_user_by_code(conn,**data)->dict:
     return await execute_function(
-        "fn_obtener_usuario_por_id",
+        "fn_obtener_usuario_por_codigo",
         "Consulta de perfil realizada correctamente",
         conn,
         **data

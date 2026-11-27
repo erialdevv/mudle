@@ -25,7 +25,6 @@ class LoginRequest(BaseModel):
 
 
 class LoginDetail(BaseModel):
-    user_id: int = Field(..., description="Identificador del usuario", examples=[1])
     access_token: str = Field(..., description="JWT de acceso")
     token_type: str = Field(default="bearer", examples=["bearer"])
 

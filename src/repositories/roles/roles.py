@@ -8,7 +8,7 @@ async def repo_insert_roles(conn,**data):
         **data
     )
 
-async def repo_get_roles(conn,**data):
+async def repo_get_roles_me(conn,**data):
     return await execute_function(
         "fn_obtener_rol_por_id",
         "Rol encontrado correctamente",
@@ -22,5 +22,13 @@ async def repo_get_all_roles(conn,**data):
         "Roles cargados correctamente",
         conn,
         all_rows=True,
+        **data
+    )
+
+async def repo_get_roles(conn,**data):
+    return await execute_function(
+        "fn_obtener_rol_por_codigo_usuario",
+        "Rol encontrado correctamente",
+        conn,
         **data
     )

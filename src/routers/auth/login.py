@@ -46,7 +46,6 @@ async def router_login(body: LoginRequest, response: Response, conn: DbConn):
         "status": True,
         "msg": result["msg"],
         "detail": {
-            "user_id": detail["user_id"],
             "access_token": detail["access_token"],
             "token_type": "bearer"
         }

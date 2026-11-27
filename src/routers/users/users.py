@@ -1,4 +1,5 @@
 import logging
+import uuid
 from fastapi import APIRouter, HTTPException, status, Request, Path, Depends, Query
 from db.connection import DbConn
 from core.security.token import validate_acces_token
@@ -55,7 +56,7 @@ async def router_get_profile(
     conn: DbConn,
     token_data: dict = Depends(validate_permissions(SystemModules.USER, ActionsPermissions.PERM_READ))
 ):
-    result = await service_get_user(conn, p_id=token_data["id"])
+    result = await service_get_user(conn, p_codigo=token_data["code"])
 
     return {
         "status": True,
@@ -82,7 +83,7 @@ async def router_get_all_users(
     return {"status": True, **result}
 
 @router.get(
-    "/{user_id}",
+    "/{user_code}",
     response_model=GetUserResponse,
     summary="Trae datos de un usuario en especifico",
     status_code=status.HTTP_200_OK,
@@ -90,10 +91,10 @@ async def router_get_all_users(
 )
 async def router_get_user(
     conn: DbConn,
-    user_id: int = Path(..., gt=0, description="ID del usuario a consultar"),
+    user_code: uuid.UUID = Path(..., description="Código (UUID) del usuario a consultar"),
     token_data: dict = Depends(validate_permissions(SystemModules.USER, ActionsPermissions.PERM_READ))
 ):
-    result = await service_get_user(conn, p_id=user_id)
+    result = await service_get_user(conn, p_codigo=user_code)
 
     return {
         "status": True,
@@ -102,7 +103,7 @@ async def router_get_user(
     }
 
 @router.patch(
-    "/update/{user_id}",
+    "/update/{user_code}",
     summary="Actualizar usuario",
     status_code=status.HTTP_200_OK,
     response_model=UpdateUserResponse,
@@ -112,7 +113,7 @@ async def router_update_user(
     request: Request,
     conn: DbConn,
     body: UpdateUserRequest = ...,
-    user_id: int = Path(..., gt=0, description="ID del usuario a editar"),
+    user_code: uuid.UUID = Path(..., description="Código (UUID) del usuario a editar"),
     token_data: dict = Depends(validate_permissions(SystemModules.USER, ActionsPermissions.PERM_UPDATE))
 ):
     data: dict = body.model_dump(exclude_unset=True)
@@ -122,8 +123,8 @@ async def router_update_user(
             detail="Debe enviar al menos un campo para actualizar."
         )
 
-    # El ID viaja por la URL; el editor y el pcid vienen del token
-    data["id"] = user_id
+    # El código viaja por la URL; el editor y el pcid vienen del token
+    data["code"] = user_code
     data["edited_by"] = token_data["code"]
     data["pcid"] = token_data["pcid"]
 
@@ -136,7 +137,7 @@ async def router_update_user(
     return {"status": True, "msg": result["msg"]}
 
 @router.patch(
-    "/canceled/{user_id}",
+    "/canceled/{user_code}",
     status_code=status.HTTP_200_OK,
     response_model=BaseResponse,
     summary="Anular usuario",
@@ -145,11 +146,11 @@ async def router_update_user(
 async def router_canceled_user(
     conn: DbConn,
     token_data: dict = Depends(validate_permissions(SystemModules.USER, ActionsPermissions.PERM_DELETE)),
-    user_id: int = Path(..., gt=0, description="ID del usuario a anular")
+    user_code: uuid.UUID = Path(..., description="Código (UUID) del usuario a anular")
 ):
     result: dict = await service_canceled_user(
         conn,
-        p_id=user_id,
+        p_codigo=user_code,
         p_editado_por=token_data.get("code"),
     )
 

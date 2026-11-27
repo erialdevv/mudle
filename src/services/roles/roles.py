@@ -1,8 +1,9 @@
 from models.roles.role import Role
 import re
+import uuid
 from core.general.errors import BadRequestError, ConflictError, FieldValidationError, NotFoundError
 from core.general.pagination import build_page
-from repositories.roles.roles import repo_insert_roles, repo_get_roles, repo_get_all_roles
+from repositories.roles.roles import repo_insert_roles, repo_get_roles_me, repo_get_all_roles, repo_get_roles
 
 _FIELD_MAP = {
     "NAME": "p_nombre",
@@ -45,17 +46,17 @@ async def service_save_roles(
     
     return await repo_insert_roles(conn,**sp_parameters)
     
-async def service_get_roles(conn,role_id:int):
+async def service_get_roles_me(conn,role_id:int):
     
     sp_parameters:dict={
         "p_rol_id":role_id
     }
     
-    result:dict=await repo_get_roles(conn, **sp_parameters)
+    result:dict=await repo_get_roles_me(conn, **sp_parameters)
     data:dict|None=result["data"]
 
     if data is None:
-        raise NotFoundError(f"El rol del usuario en sesion no existe.")
+        raise NotFoundError(f"El rol del usuario no existe.")
     
     return{
         "msg":result["msg"],
@@ -74,3 +75,23 @@ async def service_get_all_roles(conn, page: int, limit: int, search: str | None,
     items, pagination = build_page(result["data"], page, limit)
 
     return {"msg": result["msg"], "detail": items, "pagination": pagination}
+
+
+async def service_get_roles(conn, user_code:uuid.UUID):
+    
+    sp_parameters:dict={
+        "user_code":user_code
+    }
+    
+    result:dict=await repo_get_roles(conn,**sp_parameters)
+    data:dict|None=result["data"]
+
+    if data is None:
+        raise NotFoundError(f"El rol del usuario no existe.")
+    
+    return{
+        "msg":result["msg"],
+        "detail":data
+    }
+    
+    

@@ -63,7 +63,6 @@ async def service_login(conn, **data) -> dict:
     return {
         "msg": "Inicio de sesión completado exitosamente.",
         "detail": {
-            "user_id": user_valid["id"],
             "access_token": access_result["detail"]["token"],
             "refresh_token": refresh_data["token"],
             "refresh_token_exp": refresh_data["exp"]

@@ -4,25 +4,7 @@
 
 BEGIN;
 
--- 1) Usuario por id (code, first_name, last_name, institutional_email, voided)
-DROP FUNCTION IF EXISTS public.fn_obtener_usuario_por_id(bigint);
-CREATE FUNCTION public.fn_obtener_usuario_por_id(p_id bigint)
-RETURNS TABLE(
-    id bigint,
-    code uuid,
-    first_name character varying,
-    last_name character varying,
-    institutional_email character varying,
-    voided boolean,
-    created_at timestamp with time zone,
-    edited_at timestamp with time zone
-)
-LANGUAGE sql STABLE AS $function$
-    SELECT u.id, u.codigo, u.nombre, u.apellido, u.email_est, u.anulado,
-           u.fecha_creacion, u.fecha_editado
-    FROM public.sis_usuarios AS u
-    WHERE u.id = p_id;
-$function$;
+-- 1) (Usuario individual: ver usuario_por_codigo.sql)
 
 -- 2) Listado paginado de usuarios (nueva)
 DROP FUNCTION IF EXISTS public.fn_obtener_usuarios(integer, integer, character varying, boolean);
